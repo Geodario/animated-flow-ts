@@ -42,6 +42,10 @@ const tileLayer = new TileLayer({
   effect: "saturate(10%) brightness(0.3)"
 });
 
+const currentsLayer = new ImageryTileLayer({
+  url: "https://tiledimageservices.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/Spilhaus_UV_ocean_currents/ImageServer"
+});
+
 const temperatureLayer = new ImageryTileLayer({
   url: "https://tiledimageservices.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/HyCOM_Surface_Temperature___Spilhaus/ImageServer"
 });
@@ -61,7 +65,7 @@ groupLayer.add(temperatureLayer);
 groupLayer.add(flowLayer);
 
 const map = new EsriMap({
-  layers: [tileLayer, groupLayer]
+  layers: [tileLayer, currentsLayer, groupLayer]
 });
 
 // Create the map view.
