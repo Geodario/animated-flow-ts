@@ -25,6 +25,10 @@
 import TileLayer from "esri/layers/TileLayer";
 import ImageryTileLayer from "esri/layers/ImageryTileLayer";
 import GroupLayer from "esri/layers/GroupLayer";
+import GraphicsLayer from "esri/layers/GraphicsLayer";
+import Graphic from "esri/Graphic";
+import SimpleFillSymbol from "esri/symbols/SimpleFillSymbol";
+import Polygon from "esri/geometry/Polygon";
  
 // Tell the worker frameworks the location of the modules.
 esriConfig.workers.loaderConfig = {
@@ -41,6 +45,70 @@ const tileLayer = new TileLayer({
   url: "https://tiles.arcgis.com/tiles/nGt4QxSblgDfeJn9/arcgis/rest/services/Spilhaus_Vibrant_Basemap/MapServer",
   effect: "saturate(10%) brightness(0.3)"
 });
+
+const clipLayer = new GraphicsLayer({
+  blendMode: "destination-in"
+});
+
+const overlayLayer = new GraphicsLayer();
+
+setTimeout(() => {
+  const ex = new Polygon({
+    "spatialReference": {
+        "wkid": 54099
+    },
+    "rings": [
+        [
+            [
+                -16781936.102334447,
+                16603476.57387844
+            ],
+            [
+                16687922.504049376,
+                16603476.57387844
+            ],
+            [
+                16687922.504049376,
+                -16734090.101254879
+            ],
+            [
+                -16781936.102334447,
+                -16734090.101254879
+            ],
+            [
+                -16781936.102334447,
+                16603476.57387844
+            ]
+        ]
+    ]
+  });
+  const ex1 = ex;
+  const ex2 = ex;
+  // const ex1 = tileLayer.fullExtent.clone().expand(0.65);
+  // const ex2 = tileLayer.fullExtent.clone().expand(0.65);
+
+  clipLayer.add(new Graphic({
+    geometry: ex1,
+    symbol: new SimpleFillSymbol({
+      color: "white"
+    })
+  }));
+
+  overlayLayer.add(new Graphic({
+    geometry: ex2,
+    symbol: new SimpleFillSymbol({
+      color: undefined,
+      outline: {
+        color: "red"
+      }
+    })
+  }));
+}, 3000);
+
+
+const basemapLayer = new GroupLayer();
+basemapLayer.add(tileLayer);
+basemapLayer.add(clipLayer);
 
 const temperatureLayer = new ImageryTileLayer({
   url: "https://tiledimageservices.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/HyCOM_Surface_Temperature___Spilhaus/ImageServer"
@@ -61,7 +129,7 @@ groupLayer.add(temperatureLayer);
 groupLayer.add(flowLayer);
 
 const map = new EsriMap({
-  layers: [tileLayer, groupLayer]
+  layers: [basemapLayer, /* groupLayer,*/ overlayLayer]
 });
 
 // Create the map view.
