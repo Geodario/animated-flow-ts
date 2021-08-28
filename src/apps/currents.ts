@@ -50,61 +50,42 @@ const clipLayer = new GraphicsLayer({
   blendMode: "destination-in"
 });
 
-const overlayLayer = new GraphicsLayer();
+const ex = new Polygon({
+  spatialReference: {
+      "wkid": 54099
+  },
+  rings: [
+      [
+          [
+              -16781936.102334447,
+              16603476.57387844
+          ],
+          [
+              16687922.504049376,
+              16603476.57387844
+          ],
+          [
+              16687922.504049376,
+              -16734090.101254879
+          ],
+          [
+              -16781936.102334447,
+              -16734090.101254879
+          ],
+          [
+              -16781936.102334447,
+              16603476.57387844
+          ]
+      ]
+  ]
+});
 
-setTimeout(() => {
-  const ex = new Polygon({
-    "spatialReference": {
-        "wkid": 54099
-    },
-    "rings": [
-        [
-            [
-                -16781936.102334447,
-                16603476.57387844
-            ],
-            [
-                16687922.504049376,
-                16603476.57387844
-            ],
-            [
-                16687922.504049376,
-                -16734090.101254879
-            ],
-            [
-                -16781936.102334447,
-                -16734090.101254879
-            ],
-            [
-                -16781936.102334447,
-                16603476.57387844
-            ]
-        ]
-    ]
-  });
-  const ex1 = ex;
-  const ex2 = ex;
-  // const ex1 = tileLayer.fullExtent.clone().expand(0.65);
-  // const ex2 = tileLayer.fullExtent.clone().expand(0.65);
-
-  clipLayer.add(new Graphic({
-    geometry: ex1,
-    symbol: new SimpleFillSymbol({
-      color: "white"
-    })
-  }));
-
-  overlayLayer.add(new Graphic({
-    geometry: ex2,
-    symbol: new SimpleFillSymbol({
-      color: undefined,
-      outline: {
-        color: "red"
-      }
-    })
-  }));
-}, 3000);
-
+clipLayer.add(new Graphic({
+  geometry: ex,
+  symbol: new SimpleFillSymbol({
+    color: "white"
+  })
+}));
 
 const basemapLayer = new GroupLayer();
 basemapLayer.add(tileLayer);
@@ -129,7 +110,7 @@ groupLayer.add(temperatureLayer);
 groupLayer.add(flowLayer);
 
 const map = new EsriMap({
-  layers: [basemapLayer, /* groupLayer,*/ overlayLayer]
+  layers: [basemapLayer, groupLayer]
 });
 
 // Create the map view.
