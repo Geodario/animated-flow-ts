@@ -9,7 +9,7 @@
     "watch": "tsc --watch",
     "build": "tsc",
     "deploy": "sh ./deploy.sh",
-    "open": "open-cli https://wind-es.s3.us-west-1.amazonaws.com/index.html",
+    "open": "open-cli https://wind-es-next.s3.us-west-1.amazonaws.com/index.html",
     "lint": "eslint ./src/** --fix"
   },
   "author": "",
