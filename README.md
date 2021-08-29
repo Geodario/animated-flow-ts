@@ -6,9 +6,9 @@
 
 ## See it in action!
 
-- [Magnitude/direction wind](https://wind-es.s3.us-west-1.amazonaws.com/demos/winds.html)
-- [UV ocean currents](https://wind-es.s3.us-west-1.amazonaws.com/demos/currents.html)
-- [Using client-side data](https://wind-es.s3.us-west-1.amazonaws.com/demos/vortices.html)
+- [Magnitude/direction wind](https://wind-es-next.s3.us-west-1.amazonaws.com/demos/winds.html)
+- [UV ocean currents](https://wind-es-next.s3.us-west-1.amazonaws.com/demos/currents.html)
+- [Using client-side data](https://wind-es-next.s3.us-west-1.amazonaws.com/demos/vortices.html)
 
 ## Features
 
@@ -31,7 +31,7 @@
 
 ## Resources
 
-- [Live demos](https://wind-es.s3.us-west-1.amazonaws.com/index.html)
+- [Live demos](https://wind-es-next.s3.us-west-1.amazonaws.com/index.html)
 
 ## Issues
 
