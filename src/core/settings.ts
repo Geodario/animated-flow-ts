@@ -17,11 +17,9 @@
  * This module contains parameters used by the `core` package.
  */
 
-// The current extent is expanded a bit before being loaded for rendering.
-// This is done to avoid artifacts caused by the graphic objects being
-// too close to the edges of the loaded data.
-const extentExpandFactor = 1.15;
-
-export default {
-  extentExpandFactor
-};
+export class Settings {
+  // The current extent is expanded a bit before being loaded for rendering.
+  // This is done to avoid artifacts caused by the graphic objects being
+  // too close to the edges of the loaded data.
+  extentExpandFactor = 1.15;
+}

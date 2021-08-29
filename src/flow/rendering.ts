@@ -18,13 +18,12 @@
  * and the rendering algorith that renders them.
  */
 
-import Color from "esri/Color";
 import Extent from "esri/geometry/Extent";
 import { mat4 } from "gl-matrix";
 import { VisualizationStyle } from "../core/rendering";
 import { Awaitable, MapUnitsPerPixel, Pixels, Resources, VisualizationRenderParams } from "../core/types";
 import { defined, formatGLSLConstant, throwIfAborted } from "../core/util";
-import settings from "./settings";
+import { FlowSettings } from "./settings";
 import { FlowSource, FlowProcessor, PixelsPerCell } from "./types";
 
 /**
@@ -37,6 +36,9 @@ export class FlowGlobalResources implements Resources {
     program: WebGLProgram;
     uniforms: HashMap<WebGLUniformLocation>;
   }> | null = null;
+
+  constructor(private settings: FlowSettings) {
+  }
 
   attach(gl: WebGLRenderingContext): void {
     const vertexSource = `
@@ -61,7 +63,7 @@ export class FlowGlobalResources implements Resources {
       
       void main(void) {
         vec4 screenPosition = u_ScreenFromLocal * vec4(a_Position, 0.0, 1.0);
-        screenPosition += u_Rotation * vec4(a_Extrude, 0.0, 0.0) * ${formatGLSLConstant(settings.lineWidth / 2)} * u_PixelRatio;
+        screenPosition += u_Rotation * vec4(a_Extrude, 0.0, 0.0) * ${formatGLSLConstant(this.settings.lineWidth / 2)} * u_PixelRatio;
         gl_Position = u_ClipFromScreen * screenPosition;
         v_Side = a_Side;
         v_Time = a_Time;
@@ -87,11 +89,11 @@ export class FlowGlobalResources implements Resources {
 
         gl_FragColor.a *= 1.0 - length(v_Side);
 
-        float period = v_TotalTime * ${formatGLSLConstant(settings.trailPeriod)};
-        float t = mod(u_Time * ${formatGLSLConstant(settings.timeScale)} + period * v_Random, period) - v_Time;
+        float period = v_TotalTime * ${formatGLSLConstant(this.settings.trailPeriod)};
+        float t = mod(u_Time * ${formatGLSLConstant(this.settings.timeScale)} + period * v_Random, period) - v_Time;
 
         if (t > 0.0) {
-          gl_FragColor.a *= exp(-2.3 * t / (v_TotalTime * ${formatGLSLConstant(settings.trailDuration)}));
+          gl_FragColor.a *= exp(-2.3 * t / (v_TotalTime * ${formatGLSLConstant(this.settings.trailDuration)}));
         } else {
           gl_FragColor.a *= 0.0;
         }
@@ -200,7 +202,7 @@ export class FlowLocalResources implements Resources {
  * 
  */
 export class FlowVisualizationStyle extends VisualizationStyle<FlowGlobalResources, FlowLocalResources> {
-  constructor(private source: Awaitable<FlowSource>, private processor: Awaitable<FlowProcessor>, private color: Color) {
+  constructor(private settings: FlowSettings, private source: Awaitable<FlowSource>, private processor: Awaitable<FlowProcessor>) {
     super();
   }
 
@@ -216,7 +218,7 @@ export class FlowVisualizationStyle extends VisualizationStyle<FlowGlobalResourc
    * @returns A promise to the global resources.
    */
   override async loadGlobalResources(): Promise<FlowGlobalResources> {
-    return new FlowGlobalResources();
+    return new FlowGlobalResources(this.settings);
   }
 
   /**
@@ -241,8 +243,8 @@ export class FlowVisualizationStyle extends VisualizationStyle<FlowGlobalResourc
 
     throwIfAborted(signal);
 
-    const flowData = await source.fetchFlowData(extent, size[0], size[1], signal);
-    const { vertexData, indexData } = await processor.createStreamLinesMesh(flowData, signal);
+    const flowData = await source.fetchFlowData(extent, size[0], size[1], this.settings, signal);
+    const { vertexData, indexData } = await processor.createStreamLinesMesh(flowData, this.settings, signal);
     return new FlowLocalResources(flowData.cellSize, vertexData, indexData);
   }
 
@@ -328,10 +330,10 @@ export class FlowVisualizationStyle extends VisualizationStyle<FlowGlobalResourc
     gl.uniform1f(globalResources.programs!["texture"]?.uniforms["u_PixelRatio"]!, renderParams.pixelRatio);
     gl.uniform4f(
       globalResources.programs!["texture"]?.uniforms["u_Color"]!,
-      this.color.r / 255.0,
-      this.color.g / 255.0,
-      this.color.b / 255.0,
-      this.color.a * renderParams.opacity
+      this.settings.color.r / 255.0,
+      this.settings.color.g / 255.0,
+      this.settings.color.b / 255.0,
+      this.settings.color.a * renderParams.opacity
     );
     gl.uniform1f(globalResources.programs!["texture"]?.uniforms["u_Time"]!, performance.now() / 1000.0);
 

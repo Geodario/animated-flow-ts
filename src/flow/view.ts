@@ -38,6 +38,6 @@ export class FlowLayerView2D extends VisualizationLayerView2D<FlowGlobalResource
   createVisualizationStyle(): VisualizationStyle<FlowGlobalResources, FlowLocalResources> {
     const layer = this.layer as FlowLayer;
 
-    return new FlowVisualizationStyle(layer.source, layer.processor, layer.color);
+    return new FlowVisualizationStyle(layer.settings, layer.source, layer.processor);
   }
 }

@@ -21,7 +21,7 @@ import Extent from "esri/geometry/Extent";
 import ImageryTileLayer from "esri/layers/ImageryTileLayer";
 import { Pixels } from "../core/types";
 import { degreesToRadians } from "../core/util";
-import settings from "./settings";
+import { FlowSettings } from "./settings";
 import { Field, FlowData, FlowSource, PixelsPerSecond } from "./types";
 
 /**
@@ -34,7 +34,7 @@ export class ImageryTileLayerFlowSource implements FlowSource {
     this.imageryTileLayer = new ImageryTileLayer({ url });
   }
 
-  async fetchFlowData(extent: Extent, width: Pixels, height: Pixels, signal: AbortSignal): Promise<FlowData> {
+  async fetchFlowData(extent: Extent, width: Pixels, height: Pixels, settings: FlowSettings, signal: AbortSignal): Promise<FlowData> {
     const cellSize = settings.fixedCellSize;
     
     const columns = Math.round(width / cellSize);
@@ -100,7 +100,7 @@ export class VectorFieldFlowSource implements FlowSource {
   constructor(private mapVectorField: Field) {
   }
 
-  async fetchFlowData(extent: Extent, width: Pixels, height: Pixels): Promise<FlowData> {
+  async fetchFlowData(extent: Extent, width: Pixels, height: Pixels, settings: FlowSettings): Promise<FlowData> {
     const cellSize = settings.fixedCellSize;
 
     const columns = Math.round(width / cellSize);

@@ -18,10 +18,11 @@
  * from a flow source to a triangle mesh.
  */
 
-import { createStreamLinesMesh } from "./shared";
 import { StreamLinesMesh, FlowData, FlowProcessor } from "./types";
 import * as workers from "esri/core/workers";
 import { throwIfAborted } from "../core/util";
+import { FlowSettings } from "./settings";
+import { Shared } from "./shared";
 
 /**
  * Processor that runs the computation on the main process.
@@ -29,9 +30,11 @@ import { throwIfAborted } from "../core/util";
 export class MainFlowProcessor implements FlowProcessor {
   async createStreamLinesMesh(
     flowData: FlowData,
+    settings: FlowSettings,
     signal: AbortSignal
   ): Promise<StreamLinesMesh> {
-    return createStreamLinesMesh(flowData, signal);
+    const shared = new Shared(settings);
+    return shared.createStreamLinesMesh(flowData, signal);
   }
 
   destroy(): void {
@@ -46,6 +49,7 @@ export class WorkerFlowProcessor implements FlowProcessor {
 
   async createStreamLinesMesh(
     flowData: FlowData,
+    settings: FlowSettings,
     signal: AbortSignal
   ): Promise<StreamLinesMesh> {
     const connection = await this.connection;
@@ -58,7 +62,8 @@ export class WorkerFlowProcessor implements FlowProcessor {
         flowData: {
           ...flowData,
           buffer: flowData.data.buffer
-        }
+        },
+        settings
       },
       {
         transferList: [flowData.data.buffer],

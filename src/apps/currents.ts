@@ -29,6 +29,7 @@ import GraphicsLayer from "esri/layers/GraphicsLayer";
 import Graphic from "esri/Graphic";
 import SimpleFillSymbol from "esri/symbols/SimpleFillSymbol";
 import Polygon from "esri/geometry/Polygon";
+import { FlowSettings } from "../flow/settings";
  
 // Tell the worker frameworks the location of the modules.
 esriConfig.workers.loaderConfig = {
@@ -95,10 +96,14 @@ const temperatureLayer = new ImageryTileLayer({
   url: "https://tiledimageservices.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/HyCOM_Surface_Temperature___Spilhaus/ImageServer"
 });
 
+const settings = new FlowSettings();
+settings.speedScale = 1;
+
 const flowLayer = new FlowLayer({
   url: "https://tiledimageservices.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/Spilhaus_UV_ocean_currents/ImageServer",
   useWebWorkers: true,
-  blendMode: "destination-in"
+  blendMode: "destination-in",
+  settings
 } as any);
 
 // We create a group layer to combine temperature and wind in a single visualization

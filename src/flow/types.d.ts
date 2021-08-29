@@ -87,7 +87,7 @@ export type TransferableFlowData = {
  * A flow source defines how the flow data is loaded into the `FlowLayer`.
  */
 export interface FlowSource {
-  fetchFlowData(extent: Extent, width: Pixels, height: Pixels, signal: AbortSignal): Promise<FlowData>;
+  fetchFlowData(extent: Extent, width: Pixels, height: Pixels, settings: FlowSettings, signal: AbortSignal): Promise<FlowData>;
   destroy(): void;
 }
 
@@ -96,6 +96,6 @@ export interface FlowSource {
  * that are subsequently transformed into a triangle mesh.
  */
 export interface FlowProcessor {
-  createStreamLinesMesh(flowData: FlowData, signal: AbortSignal): Promise<StreamLinesMesh>;
+  createStreamLinesMesh(flowData: FlowData, settings: FlowSettings, signal: AbortSignal): Promise<StreamLinesMesh>;
   destroy(): void;
 }

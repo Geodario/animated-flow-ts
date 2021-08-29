@@ -17,62 +17,52 @@
  * This module contains parameters used by the `flow` package.
  */
 
+import Color from "esri/Color";
+import { Settings } from "../core/settings";
 import { Milliseconds } from "../core/types";
 import { Cells, PixelsPerCell, PixelsPerSecond } from "./types";
 
-// The size of cell in pixels.
-const fixedCellSize: PixelsPerCell = 5;
+export class FlowSettings extends Settings {
+  color = new Color([255, 255, 255, 1]);
 
-// The size of the smoothing kernel in cells.
-const smoothing: Cells = 3;
+  // The size of cell in pixels.
+  fixedCellSize: PixelsPerCell = 5;
 
-// The length of a streamline segment.
-const segmentLength: Cells = 1;
+  // The size of the smoothing kernel in cells.
+  smoothing: Cells = 3;
 
-// Maximum number of vertices in a streamline.
-const verticesPerLine = 30;
+  // The length of a streamline segment.
+  segmentLength: Cells = 1;
 
-// Controls the speed of particles during simulation.
-const speedScale = 0.1;
+  // Maximum number of vertices in a streamline.
+  verticesPerLine = 30;
 
-// How many streamlines per screen.
-const linesPerVisualization = 6000;
+  // Controls the speed of particles during simulation.
+  speedScale = 0.1;
 
-// Below this speed, the simulation of a particle is stopped.
-const minSpeedThreshold: PixelsPerSecond = 0.001;
+  // How many streamlines per screen.
+  linesPerVisualization = 6000;
 
-// Protection against division-by-zero during smoothing with gaussian kernel.
-const minWeightThreshold = 0.001;
+  // Below this speed, the simulation of a particle is stopped.
+  minSpeedThreshold: PixelsPerSecond = 0.001;
 
-// The generation of the streamlines mesh has a chance of being stopped
-// once in a while; this allows to cancel the process when it is detected
-// that the viewpoint has changed and the mesh is not needed anymore.
-const flowProcessingQuanta: Milliseconds = 100;
+  // Protection against division-by-zero during smoothing with gaussian kernel.
+  minWeightThreshold = 0.001;
 
-// The width of a streamline in pixels.
-const lineWidth = 2;
+  // The generation of the streamlines mesh has a chance of being stopped
+  // once in a while; this allows to cancel the process when it is detected
+  // that the viewpoint has changed and the mesh is not needed anymore.
+  flowProcessingQuanta: Milliseconds = 100;
 
-// The length of a streamline trail expressed in seconds.
-const trailDuration: number = 1;
+  // The width of a streamline in pixels.
+  lineWidth = 2;
 
-// The period after which a streamline animation repeats.
-const trailPeriod: number = 3;
+  // The length of a streamline trail expressed in seconds.
+  trailDuration: number = 1;
 
-// Controls the animation speed of the streamlines trails.
-const timeScale = 30;
+  // The period after which a streamline animation repeats.
+  trailPeriod: number = 3;
 
-export default {
-  fixedCellSize,
-  smoothing,
-  segmentLength,
-  verticesPerLine,
-  speedScale,
-  linesPerVisualization,
-  minSpeedThreshold,
-  minWeightThreshold,
-  flowProcessingQuanta,
-  lineWidth,
-  trailDuration,
-  trailPeriod,
-  timeScale
-};
+  // Controls the animation speed of the streamlines trails.
+  timeScale = 30;
+}

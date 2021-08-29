@@ -46,10 +46,10 @@
 import { property, subclass } from "esri/core/accessorSupport/decorators";
 import Extent from "esri/geometry/Extent";
 import BaseLayerViewGL2D from "esri/views/2d/layers/BaseLayerViewGL2D";
+import { VisualizationLayer } from "./layer";
 import { attach, detach, VisualizationStyle } from "./rendering";
 import { LocalResourcesEntry, Resources, GlobalResourcesEntry, VisualizationRenderParams, Pixels } from "./types";
 import { defined, degreesToRadians } from "./util";
-import settings from "./settings";
 
 /**
  * A 2D layer view designed around the concept of "visualizations".
@@ -72,7 +72,7 @@ import settings from "./settings";
  * stiched together they form a full coverage. There could even be a "tiled"
  * strategy, in which visualizations are regularly spaced and equally sized.
  */
-@subclass("animated-flow-ts.core.visualization.LayerView2D")
+@subclass("animated-flow-ts.core.view.LayerView2D")
 export abstract class VisualizationLayerView2D<GR extends Resources, LR extends Resources> extends BaseLayerViewGL2D {
   /**
    * Global resources are used by all visualizations. An example of a global
@@ -183,7 +183,7 @@ export abstract class VisualizationLayerView2D<GR extends Resources, LR extends 
     });
     rotatedExtent.centerAt(center);
 
-    const expandedExtent = rotatedExtent.clone().expand(settings.extentExpandFactor);
+    const expandedExtent = rotatedExtent.clone().expand((this.layer as VisualizationLayer).settings.extentExpandFactor);
     
     // Compute the rest of the parameters needed for the load operation.
     const resolution = this.view.resolution;

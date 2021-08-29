@@ -25,12 +25,16 @@ import { MainFlowProcessor, WorkerFlowProcessor } from "./processors";
 import { FlowLayerView2D } from "./view";
 import { ImageryTileLayerFlowSource } from "./sources";
 import { FlowSource, FlowProcessor } from "./types";
+import { FlowSettings } from "./settings";
 
 /**
  * A layer that supports 2D visualizations of animated flow lines in `MapView`.
  */
 @subclass("animated-flow-ts.flow.layer.FlowLayer")
 export class FlowLayer extends Layer {
+  @property({})
+  settings = new FlowSettings();
+
   /**
    * A promise to a flow source.
    * 

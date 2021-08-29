@@ -23,7 +23,8 @@
  * that ships as part of the ArcGIS API for JavaScript.
  */
 
-import { createStreamLinesMesh as createStreamLinesMeshImpl } from "../flow/shared";
+import { FlowSettings } from "../flow/settings";
+import { Shared } from "../flow/shared";
 import { TransferableFlowData } from "../flow/types";
 
 /**
@@ -37,10 +38,13 @@ import { TransferableFlowData } from "../flow/types";
  * @returns A promise to a transferable mesh.
  */
 export async function createStreamLinesMesh(
-  data: { flowData: TransferableFlowData; },
+  data: { flowData: TransferableFlowData; settings: Object; },
   options: { signal: AbortSignal }
 ): Promise<{ result: { vertexBuffer: ArrayBuffer; indexBuffer: ArrayBuffer }; transferList: ArrayBuffer[] }> {
-  const { vertexData, indexData } = await createStreamLinesMeshImpl(
+  const settings = new FlowSettings();
+  Object.assign(settings, data.settings);
+  const shared = new Shared(settings);
+  const { vertexData, indexData } = await shared.createStreamLinesMesh(
     {
       ...data.flowData,
       data: new Float32Array(data.flowData.buffer)
