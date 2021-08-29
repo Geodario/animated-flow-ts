@@ -27,6 +27,7 @@ import { Field, PixelsPerSecond } from "../flow/types";
 import esriConfig from "esri/config";
 import Color from "esri/Color";
 import { MapUnits } from "../core/types";
+import { FlowSettings } from "../flow/settings";
 
 esriConfig.workers.loaderConfig = {
   packages: [
@@ -66,12 +67,15 @@ const windVectorField = (x: MapUnits, y: MapUnits): [PixelsPerSecond, PixelsPerS
   return [v1[0] + v2[0] + v3[0], v1[1] + v2[1] + v3[1]];
 };
 
+const settings = new FlowSettings();
+settings.color = new Color([60, 220, 160, 1]);
+
 // The `FlowLayer` uses the analytic velocity field as data source.
 const windLayer = new FlowLayer({
   source: new VectorFieldFlowSource(windVectorField),
   effect: "bloom(1.5, 0.5px, 0.2)",
   useWebWorkers: true,
-  color: new Color([60, 220, 160, 1])
+  settings
 } as any);
 
 // Create the map with the three layers defined above.

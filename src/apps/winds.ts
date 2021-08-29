@@ -24,6 +24,7 @@ import { FlowLayer } from "../flow/layer";
 import ImageryTileLayer from "esri/layers/ImageryTileLayer";
 import esriConfig from "esri/config";
 import Color from "esri/Color";
+import { FlowSettings } from "../flow/settings";
 
 // Tell the worker frameworks the location of the modules.
 esriConfig.workers.loaderConfig = {
@@ -48,12 +49,15 @@ const url = "https://tiledimageservices.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/
 // with the ArcGIS API for JavaScript.
 const imageryLayer = new ImageryTileLayer({ url, opacity: 0.8 });
 
+const settings = new FlowSettings();
+settings.color = new Color([60, 160, 220, 1]);
+
 // But then it is also used as data source for the custom `FlowLayer`.
 const windLayer = new FlowLayer({
   url,
   effect: "bloom(1.5, 0.5px, 0.2)",
   useWebWorkers: true,
-  color: new Color([60, 160, 220, 1])
+  settings
 } as any);
 
 // Create the map with the three layers defined above.
