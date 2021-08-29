@@ -30,6 +30,9 @@ import Graphic from "esri/Graphic";
 import SimpleFillSymbol from "esri/symbols/SimpleFillSymbol";
 import Polygon from "esri/geometry/Polygon";
 import { FlowSettings } from "../flow/settings";
+import MultipartColorRamp from "esri/tasks/support/MultipartColorRamp";
+import AlgorithmicColorRamp from "esri/tasks/support/AlgorithmicColorRamp";
+import Color from "esri/Color";
  
 // Tell the worker frameworks the location of the modules.
 esriConfig.workers.loaderConfig = {
@@ -92,12 +95,52 @@ const basemapLayer = new GroupLayer();
 basemapLayer.add(tileLayer);
 basemapLayer.add(clipLayer);
 
+const colorRamp = new MultipartColorRamp({
+  colorRamps: [
+    // new AlgorithmicColorRamp({
+    //   fromColor: new Color([10, 0, 110, 255]),
+    //   toColor: new Color([70, 0, 150, 255])
+    // }),
+
+    new AlgorithmicColorRamp({
+      fromColor: new Color([20, 100, 150, 255]),
+      toColor: new Color([70, 0, 150, 255])
+    }),
+    new AlgorithmicColorRamp({
+      fromColor: new Color([70, 0, 150, 255]),
+      toColor: new Color([170, 0, 120, 255])
+    }),
+    new AlgorithmicColorRamp({
+      fromColor: new Color([170, 0, 120, 255]),
+      toColor: new Color([230, 100, 60, 255])
+    }),
+    new AlgorithmicColorRamp({
+      fromColor: new Color([230, 100, 60, 255]),
+      toColor: new Color([255, 170, 0, 255])
+    }),
+    new AlgorithmicColorRamp({
+      fromColor: new Color([255, 170, 0, 255]),
+      toColor: new Color([255, 255, 0, 255])
+    }),
+  ]
+});
+
 const temperatureLayer = new ImageryTileLayer({
-  url: "https://tiledimageservices.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/HyCOM_Surface_Temperature___Spilhaus/ImageServer"
+  url: "https://tiledimageservices.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/HyCOM_Surface_Temperature___Spilhaus/ImageServer",
+  renderer: {
+    colorRamp,
+    "computeGamma": false,
+    "gamma": [1],
+    "useGamma": false,
+    "stretchType": "min-max",
+    "type": "raster-stretch"
+  }
 });
 
 const settings = new FlowSettings();
 settings.speedScale = 1;
+settings.smoothing = 5;
+settings.fixedCellSize = 5;
 
 const flowLayer = new FlowLayer({
   url: "https://tiledimageservices.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/Spilhaus_UV_ocean_currents/ImageServer",
@@ -122,7 +165,7 @@ const map = new EsriMap({
 new MapView({
   container: "viewDiv",
   map,
-  zoom: 4,
+  scale: 40000000,
   center: [-98, 39]
 });
  
