@@ -48,6 +48,16 @@ export class ImageryTileLayerFlowSource implements FlowSource {
       rows,
       { signal }
     );
+
+    if (!rasterData.pixelBlock) {
+      return {
+        data: new Float32Array(columns * rows * 2),
+        columns,
+        rows,
+        cellSize
+      };
+    }
+
     // The returned data is in the "pixels" property of the pixel block
     // but from the perspective of animated-flow-ts those values are per-cell,
     // not per-pixel; a cell can span multiple pixels.
