@@ -49,7 +49,7 @@ export class ImageryTileLayerFlowSource implements FlowSource {
       { signal }
     );
 
-    if (!rasterData.pixelBlock) {
+    if (!rasterData) {
       return {
         data: new Float32Array(columns * rows * 2),
         columns,
