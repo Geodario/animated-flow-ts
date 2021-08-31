@@ -25,6 +25,8 @@ import ImageryTileLayer from "esri/layers/ImageryTileLayer";
 import esriConfig from "esri/config";
 import Color from "esri/Color";
 import { FlowSettings } from "../flow/settings";
+import AlgorithmicColorRamp from "esri/tasks/support/AlgorithmicColorRamp";
+import RasterStretchRenderer from "esri/renderers/RasterStretchRenderer";
 
 // Tell the worker frameworks the location of the modules.
 esriConfig.workers.loaderConfig = {
@@ -47,7 +49,14 @@ const url = "https://tiledimageservices.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/
 // First, it is added as a layer in the map, and visualized as
 // static arrows by the stock vector field renderer that ships
 // with the ArcGIS API for JavaScript.
-const imageryLayer = new ImageryTileLayer({ url, opacity: 0.8 });
+// const imageryLayer = new ImageryTileLayer({ url, opacity: 1, renderer: new RasterStretchRenderer({
+//   stretchType: "min-max",
+//   colorRamp: new AlgorithmicColorRamp({
+//     fromColor: new Color([0, 0, 255, 1]),
+//     toColor: new Color([255, 0, 0, 1])
+//   })
+// })});
+const imageryLayer = new ImageryTileLayer({ url, opacity: 1 });
 
 const settings = new FlowSettings();
 settings.color = new Color([60, 160, 220, 1]);
@@ -60,9 +69,11 @@ const windLayer = new FlowLayer({
   settings
 } as any);
 
+console.log(windLayer, imageryLayer);
+
 // Create the map with the three layers defined above.
 const map = new EsriMap({
-  layers: [vectorTileLayer, imageryLayer, windLayer]
+  layers: [vectorTileLayer, /*imageryLayer,*/ windLayer]
 });
 
 // Create the map view.

@@ -149,6 +149,10 @@ const flowLayer = new FlowLayer({
   settings
 } as any);
 
+const vectorLayer = new ImageryTileLayer({
+  url: "https://tiledimageservices.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/Spilhaus_UV_ocean_currents/ImageServer"
+});
+
 // We create a group layer to combine temperature and wind in a single visualization
 // where the temperature drives the color of the streamlines.
 const groupLayer = new GroupLayer({
@@ -158,7 +162,7 @@ groupLayer.add(temperatureLayer);
 groupLayer.add(flowLayer);
 
 const map = new EsriMap({
-  layers: [basemapLayer, groupLayer]
+  layers: [basemapLayer, vectorLayer, groupLayer]
 });
 
 // Create the map view.

@@ -180,9 +180,10 @@ export class Shared {
     const lines: StreamLineVertex[][] = [];
     
     const rand = createRand();
+    console.log(rand);
 
     for (let i = 0; i < this.settings.linesPerVisualization; i++) {
-      const line = this.trace(f, Math.round(rand() * columns), Math.round(rand() * rows), cellSize);
+      const line = this.trace(f, Math.random() * columns, Math.random() * rows, cellSize);
       lines.push(line);
     }
 

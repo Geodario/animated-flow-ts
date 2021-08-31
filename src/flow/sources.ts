@@ -42,8 +42,9 @@ export class ImageryTileLayerFlowSource implements FlowSource {
 
     await this.imageryTileLayer.load(signal);
     const dataType = this.imageryTileLayer.rasterInfo.dataType;
+    const intersectedExtent = extent.clone();//.intersection(this.imageryTileLayer.rasterInfo.extent);
     const rasterData = await this.imageryTileLayer.fetchPixels(
-      extent,
+      intersectedExtent,
       columns,
       rows,
       { signal }
