@@ -165,7 +165,10 @@ const map = new EsriMap({
 new MapView({
   container: "viewDiv",
   map,
-  scale: 40000000,
-  center: [-98, 39]
+  scale: 90000000,
+  center: [-98, 39],
+  constraints: {
+    minScale: 90000000
+  }
 });
  
