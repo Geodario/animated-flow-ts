@@ -100,7 +100,7 @@ export class FlowGlobalResources implements Resources {
 
         gl_FragColor.rgb *= gl_FragColor.a;
 
-        // gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        // gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
       }`;
 
     const vertexShader = gl.createShader(gl.VERTEX_SHADER);

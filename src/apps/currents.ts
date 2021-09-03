@@ -56,31 +56,31 @@ const clipLayer = new GraphicsLayer({
 
 const ex = new Polygon({
   spatialReference: {
-      "wkid": 54099
+    wkid: 54099
   },
   rings: [
+    [
       [
-          [
-              -16781936.102334447,
-              16603476.57387844
-          ],
-          [
-              16687922.504049376,
-              16603476.57387844
-          ],
-          [
-              16687922.504049376,
-              -16734090.101254879
-          ],
-          [
-              -16781936.102334447,
-              -16734090.101254879
-          ],
-          [
-              -16781936.102334447,
-              16603476.57387844
-          ]
+          -16781936.102334447,
+          16603476.57387844
+      ],
+      [
+          16687922.504049376,
+          16603476.57387844
+      ],
+      [
+          16687922.504049376,
+          -16734090.101254879
+      ],
+      [
+          -16781936.102334447,
+          -16734090.101254879
+      ],
+      [
+          -16781936.102334447,
+          16603476.57387844
       ]
+    ]
   ]
 });
 
@@ -97,11 +97,6 @@ basemapLayer.add(clipLayer);
 
 const colorRamp = new MultipartColorRamp({
   colorRamps: [
-    // new AlgorithmicColorRamp({
-    //   fromColor: new Color([10, 0, 110, 255]),
-    //   toColor: new Color([70, 0, 150, 255])
-    // }),
-
     new AlgorithmicColorRamp({
       fromColor: new Color([20, 100, 150, 255]),
       toColor: new Color([70, 0, 150, 255])
@@ -138,9 +133,15 @@ const temperatureLayer = new ImageryTileLayer({
 });
 
 const settings = new FlowSettings();
-settings.speedScale = 1;
 settings.smoothing = 5;
 settings.fixedCellSize = 5;
+// settings.speedScale = 1;
+// settings.smoothing = 1;
+// settings.linesPerVisualization = 10000;
+// settings.fixedCellSize = 1;
+// settings.lineWidth = 2;
+// settings.verticesPerLine = 100;
+// settings.segmentLength = 1;
 
 const flowLayer = new FlowLayer({
   url: "https://tiledimageservices.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/Spilhaus_UV_ocean_currents/ImageServer",
@@ -148,6 +149,8 @@ const flowLayer = new FlowLayer({
   blendMode: "destination-in",
   settings
 } as any);
+
+console.log(temperatureLayer);
 
 // We create a group layer to combine temperature and wind in a single visualization
 // where the temperature drives the color of the streamlines.
@@ -167,8 +170,8 @@ new MapView({
   map,
   scale: 80000000,
   center: [-98, 39],
-  constraints: {
-    minScale: 80000000
-  }
+  // constraints: {
+  //   minScale: 80000000
+  // }
 });
  
