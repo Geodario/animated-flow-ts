@@ -9,11 +9,12 @@ import { FlowVisualizationStyle } from "../flow/rendering";
 import { FlowSettings } from "../flow/settings";
 import { VectorFieldFlowSource } from "../flow/sources";
 import { Field, PixelsPerSecond } from "../flow/types";
+import { GUI } from "dat.gui";
 
 // Create canvas.
 const canvas = document.createElement("canvas");
-canvas.width = 640;
-canvas.height = 360;
+canvas.width = innerWidth;
+canvas.height = innerHeight;
 document.body.appendChild(canvas);
 const gl = canvas.getContext("webgl");
 defined(gl);
@@ -55,6 +56,16 @@ const processor = new MainFlowProcessor();
 // The visualization style combines them together.
 const flowVizStyle = new FlowVisualizationStyle(settings, source, processor);
 
+const gui = new GUI();
+const config = {
+	tilt: 0,
+  curvature: 5000,
+  distance: 250
+};
+gui.add(config, "tilt").min(0).max(90).step(1);
+gui.add(config, "curvature").min(100).max(5000).step(1);
+gui.add(config, "distance").min(100).max(500).step(1);
+
 async function main(): Promise<void> {
   defined(gl);
   const globalResources = await flowVizStyle.loadGlobalResources();
@@ -67,7 +78,7 @@ async function main(): Promise<void> {
       ymax: 39 + 18
     }),
     0.1,
-    [640, 360],
+    [1024, 1024],
     1,
     new AbortController().signal
   );
@@ -76,20 +87,26 @@ async function main(): Promise<void> {
   localResources.attach(gl);
 
   const projection = mat4.create();
-  mat4.perspective(projection, 1, 16 / 9, 1, 1000);
+  mat4.perspective(projection, 1, canvas.width / canvas.height, 1, 1000);
 
   const preCurve = mat4.create();
-  mat4.translate(preCurve, preCurve, [-320, -180, 0]);
-  const curvature = 1000;
   const postCurve = mat4.create();
-  mat4.mul(postCurve, projection, postCurve);
-  mat4.scale(postCurve, postCurve, [100, 100, 0]);
-  // mat4.rotateX(postCurve, postCurve, Math.PI / 2);
 
   function render(): void {
     defined(gl);
+
+    mat4.identity(preCurve);
+    mat4.identity(postCurve);
+  
+    mat4.translate(preCurve, preCurve, [-512, -512, 0]);
+    const curvature = config.curvature;
+    mat4.translate(postCurve, postCurve, [0, 0, -config.distance]);
+    mat4.rotateX(postCurve, postCurve, -Math.PI * config.tilt / 180);
+    // mat4.rotateZ(postCurve, postCurve, 0.1 * performance.now() / 1000.0);
+    mat4.mul(postCurve, projection, postCurve);
+
     const renderParams: VisualizationRenderParams = {
-      size: [640, 360],
+      size: [0, 0],
       translation: [0, 0],
       rotation: 0,
       scale: 1,

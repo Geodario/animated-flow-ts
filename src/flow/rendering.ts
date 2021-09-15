@@ -70,12 +70,12 @@ export class FlowGlobalResources implements Resources {
         screenPosition.z += u_Curvature;
         screenPosition.xyz = normalize(screenPosition.xyz) * u_Curvature;
         screenPosition.z -= u_Curvature;
-        // screenPosition = u_PostCurve * screenPosition;
+        screenPosition = u_PostCurve * screenPosition;
         
         screenPosition += u_Rotation * vec4(a_Extrude, 0.0, 0.0) * ${formatGLSLConstant(this.settings.lineWidth / 2)} * u_PixelRatio;
 
-        gl_Position = u_ClipFromScreen * screenPosition;
-        // gl_Position = screenPosition;
+        // gl_Position = u_ClipFromScreen * screenPosition;
+        gl_Position = screenPosition;
 
         v_Side = a_Side;
         v_Time = a_Time;
