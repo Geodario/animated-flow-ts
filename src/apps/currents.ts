@@ -151,7 +151,7 @@ const flowLayer = new FlowLayer({
 // We create a group layer to combine temperature and wind in a single visualization
 // where the temperature drives the color of the streamlines.
 const groupLayer = new GroupLayer({
-  effect: "bloom(4.5, 0.5px, 0.2)"
+  effect: "bloom(4.5, 0.5px, 0.0)"
 });
 groupLayer.add(temperatureLayer);
 groupLayer.add(flowLayer);
