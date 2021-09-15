@@ -98,6 +98,8 @@ export class FlowGlobalResources implements Resources {
           gl_FragColor.a *= 0.0;
         }
 
+        // gl_FragColor.a = 1.0;
+
         gl_FragColor.rgb *= gl_FragColor.a;
 
         // gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);

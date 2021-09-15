@@ -47,7 +47,7 @@ esriConfig.workers.loaderConfig = {
 // A tile layer is used as basemap.
 const tileLayer = new TileLayer({
   url: "https://tiles.arcgis.com/tiles/nGt4QxSblgDfeJn9/arcgis/rest/services/Spilhaus_Vibrant_Basemap/MapServer",
-  effect: "saturate(10%) brightness(0.3)"
+  // effect: "saturate(10%) brightness(0.3)"
 });
 
 const clipLayer = new GraphicsLayer({
@@ -139,20 +139,20 @@ settings.speedScale = 10;
 settings.smoothing = 3;
 settings.linesPerVisualization = 10000;
 // settings.fixedCellSize = 1;
-settings.lineWidth = 2;
+// settings.lineWidth = 2;
 
 settings.verticesPerLine *= 3;
 // settings.verticesPerLine = 3;
 
 settings.minWeightThreshold = 0;
 settings.minSpeedThreshold = 0;
-settings.color = new Color([255, 255, 255, 1]);
+settings.color = new Color([0, 0, 0, 1]);
 // settings.segmentLength = 1;
 
 const flowLayer = new FlowLayer({
   url: "https://tiledimageservices.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/Spilhaus_UV_ocean_currents/ImageServer",
   useWebWorkers: true,
-  blendMode: "destination-in",
+  // blendMode: "destination-in",
   settings
 } as any);
 
@@ -173,13 +173,13 @@ console.log(temperatureLayer, stretchLayer, vectorLayer);
 // We create a group layer to combine temperature and wind in a single visualization
 // where the temperature drives the color of the streamlines.
 const groupLayer = new GroupLayer({
-  effect: "bloom(4.5, 0.5px, 0.2)"
+  // effect: "bloom(1.5, 0.5px, 0.2)"
 });
-groupLayer.add(temperatureLayer);
+// groupLayer.add(temperatureLayer);
 groupLayer.add(flowLayer);
 
 const map = new EsriMap({
-  layers: [basemapLayer, /*stretchLayer,*/ groupLayer, /*vectorLayer*/]
+  layers: [basemapLayer, /*stretchLayer,*/ groupLayer, vectorLayer]
 });
 
 // Create the map view.

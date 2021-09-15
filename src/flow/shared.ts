@@ -131,7 +131,7 @@ export class Shared {
    * @param cellSize The size of a cell in pixels.
    * @returns An array of timestamped vertices.
    */
-  trace(f: Field, x0: Cells, y0: Cells, cellSize: PixelsPerCell): StreamLineVertex[] {
+  trace(f: Field, x0: Cells, y0: Cells, cellSize: PixelsPerCell, lineId: number, collisionField: Int32Array, columns: number, rows: number): StreamLineVertex[] {
     const lineVertices: StreamLineVertex[] = [];
 
     let x = x0;
@@ -144,6 +144,17 @@ export class Shared {
     });
 
     for (let i = 0; i < this.settings.verticesPerLine; i++) {
+      let ix = Math.round(x);
+      let iy = Math.round(y);
+      if (ix < 0 || ix > columns - 1 || iy < 0 || iy > rows - 1) {
+        return lineVertices;
+      }
+      const c = collisionField[iy * columns + ix];
+      if (c !== -1 && c !== lineId) {
+        return lineVertices;
+      }
+      collisionField[iy * columns + ix] = lineId;
+
       let [vx, vy] = f(x, y);
       vx *= this.settings.speedScale;
       vy *= this.settings.speedScale;
@@ -181,8 +192,13 @@ export class Shared {
     
     const rand = createRand();
 
+    const collisionField = new Int32Array(columns * rows);
+    for (let i = 0; i < collisionField.length; i++) {
+      collisionField[i] = -1;
+    }
+
     for (let i = 0; i < this.settings.linesPerVisualization; i++) {
-      const line = this.trace(f, Math.round(rand() * columns), Math.round(rand() * rows), cellSize);
+      const line = this.trace(f, Math.round(rand() * columns), Math.round(rand() * rows), cellSize, i, collisionField, columns, rows);
       lines.push(line);
     }
 

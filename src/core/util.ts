@@ -50,6 +50,7 @@ export function assert(condition: unknown): asserts condition {
  * @returns A function with no arguments that returns values in the range [0, 1);
  * such function is a plug-in replacement for `Math.random()`.
  */
+
 export function createRand(seed = 3): () => number {
   const m = 1 << 23;
   const a = 65793;
@@ -62,6 +63,25 @@ export function createRand(seed = 3): () => number {
     return ((z >> 8) & ((1 << 15) - 1)) / (1 << 15);
   };
 }
+
+// export function createRand(_seed = 3): () => number {
+//   return () => Math.random();
+// }
+
+// export function createRand(): () => number {
+//   const values = new Uint32Array(65536 / 4);
+//   crypto.getRandomValues(values);
+//   let i = 0;
+//   return () => {
+//     const x = values[i];
+//     defined(x);
+//     i++;
+//     if (i >= values.length) {
+//       i = 0;
+//     }
+//     return x / Math.pow(2, 32);
+//   };
+// }
 
 /**
  * Throw an `AbortError` if a given `AbortSignal` is aborted.
