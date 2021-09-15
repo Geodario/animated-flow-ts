@@ -46,6 +46,8 @@ export type StreamLineVertex = {
    * for the trail to fully fade.
    */
   time: Seconds;
+
+  opacity: number;
 };
 
 /**

@@ -137,31 +137,34 @@ export class Shared {
     let x = x0;
     let y = y0;
     let t = 0;
+    let opacity = 1;
+
+    if (this.settings.mergeLines) {
+      const ix = Math.round(x);
+      const iy = Math.round(y);
+      if (ix < 0 || ix > columns - 1 || iy < 0 || iy > rows - 1) {
+        opacity = 0;
+      } else {
+        const c = collisionField[iy * columns + ix];
+        if (c !== -1 && c !== lineId) {
+          opacity = 0;
+        } else {
+          collisionField[iy * columns + ix] = lineId;
+        }
+      }
+    }
 
     lineVertices.push({
       position: [x * cellSize, y * cellSize],
-      time: t
+      time: t,
+      opacity
     });
 
     for (let i = 0; i < this.settings.verticesPerLine; i++) {
-      let ix = Math.round(x);
-      let iy = Math.round(y);
-      if (ix < 0 || ix > columns - 1 || iy < 0 || iy > rows - 1) {
-        return lineVertices;
-      }
-      const c = collisionField[iy * columns + ix];
-      if (c !== -1 && c !== lineId) {
-        return lineVertices;
-      }
-      collisionField[iy * columns + ix] = lineId;
-
       let [vx, vy] = f(x, y);
       vx *= this.settings.speedScale;
       vy *= this.settings.speedScale;
       const v = Math.sqrt(vx * vx + vy * vy);
-      if (v < this.settings.minSpeedThreshold) {
-        return lineVertices;
-      }
       const dx = vx / v;
       const dy = vy / v;
       x += dx * this.settings.segmentLength;
@@ -169,9 +172,25 @@ export class Shared {
       const dt = this.settings.segmentLength / v;
       t += dt;
 
+      if (this.settings.mergeLines) {
+        const ix = Math.round(x);
+        const iy = Math.round(y);
+        if (ix < 0 || ix > columns - 1 || iy < 0 || iy > rows - 1) {
+          opacity = 0;
+        } else {
+          const c = collisionField[iy * columns + ix];
+          if (c !== -1 && c !== lineId) {
+            opacity = 0;
+          } else {
+            collisionField[iy * columns + ix] = lineId;
+          }
+        }
+      }
+
       lineVertices.push({
         position: [x * cellSize, y * cellSize],
-        time: t
+        time: t,
+        opacity
       });
     }
 
@@ -243,13 +262,14 @@ export class Shared {
       for (let i = 1; i < line.length; i++) {
         let {
           position: [x0, y0],
-          time: t0
+          time: t0,
+          opacity: opacity0
         } = line[i - 1]!;
         let {
           position: [x1, y1],
-          time: t1
+          time: t1,
+          opacity: opacity1
         } = line[i]!;
-        const speed = 1 / (t1 - t0);
 
         const l = Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0));
         const ex = -(y1 - y0) / l;
@@ -263,7 +283,7 @@ export class Shared {
           -1,
           t0,
           totalTime,
-          speed,
+          opacity0,
           random,
           x0,
           y0,
@@ -272,7 +292,7 @@ export class Shared {
           +1,
           t0,
           totalTime,
-          speed,
+          opacity0,
           random,
           x1,
           y1,
@@ -281,7 +301,7 @@ export class Shared {
           -1,
           t1,
           totalTime,
-          speed,
+          opacity1,
           random,
           x1,
           y1,
@@ -290,7 +310,7 @@ export class Shared {
           +1,
           t1,
           totalTime,
-          speed,
+          opacity1,
           random
         );
 

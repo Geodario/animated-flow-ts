@@ -144,8 +144,6 @@ settings.linesPerVisualization = 10000;
 settings.verticesPerLine *= 3;
 // settings.verticesPerLine = 3;
 
-settings.minWeightThreshold = 0;
-settings.minSpeedThreshold = 0;
 settings.color = new Color([0, 0, 0, 1]);
 // settings.segmentLength = 1;
 

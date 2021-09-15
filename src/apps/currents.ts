@@ -18,10 +18,10 @@
  * using blend modes with another layer.
  */
 
- import EsriMap from "esri/Map";
- import MapView from "esri/views/MapView";
- import { FlowLayer } from "../flow/layer";
- import esriConfig from "esri/config";
+import EsriMap from "esri/Map";
+import MapView from "esri/views/MapView";
+import { FlowLayer } from "../flow/layer";
+import esriConfig from "esri/config";
 import TileLayer from "esri/layers/TileLayer";
 import ImageryTileLayer from "esri/layers/ImageryTileLayer";
 import GroupLayer from "esri/layers/GroupLayer";
@@ -135,19 +135,11 @@ const temperatureLayer = new ImageryTileLayer({
 const settings = new FlowSettings();
 settings.smoothing = 1;
 settings.fixedCellSize = 1;
-settings.speedScale = 10;
-settings.smoothing = 3;
+settings.speedScale = 1;
 settings.linesPerVisualization = 10000;
-// settings.fixedCellSize = 1;
-settings.lineWidth = 2;
-
-settings.verticesPerLine *= 3;
-// settings.verticesPerLine = 3;
-
-settings.minWeightThreshold = 0;
-settings.minSpeedThreshold = 0;
+settings.verticesPerLine = 100;
 settings.color = new Color([255, 255, 255, 1]);
-// settings.segmentLength = 1;
+settings.mergeLines = true;
 
 const flowLayer = new FlowLayer({
   url: "https://tiledimageservices.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/Spilhaus_UV_ocean_currents/ImageServer",
@@ -155,20 +147,6 @@ const flowLayer = new FlowLayer({
   blendMode: "destination-in",
   settings
 } as any);
-
-const stretchLayer = new ImageryTileLayer({
-  url: "https://tiledimageservices.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/Spilhaus_UV_ocean_currents/ImageServer",
-  renderer: {
-    type: "raster-stretch",
-    stretchType: "min-max"
-  }
-} as any);
-
-const vectorLayer = new ImageryTileLayer({
-  url: "https://tiledimageservices.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/Spilhaus_UV_ocean_currents/ImageServer"
-} as any);
-
-console.log(temperatureLayer, stretchLayer, vectorLayer);
 
 // We create a group layer to combine temperature and wind in a single visualization
 // where the temperature drives the color of the streamlines.
@@ -179,7 +157,7 @@ groupLayer.add(temperatureLayer);
 groupLayer.add(flowLayer);
 
 const map = new EsriMap({
-  layers: [basemapLayer, /*stretchLayer,*/ groupLayer, /*vectorLayer*/]
+  layers: [basemapLayer, groupLayer]
 });
 
 // Create the map view.
@@ -187,9 +165,6 @@ new MapView({
   container: "viewDiv",
   map,
   scale: 80000000,
-  center: [-98, 39],
-  // constraints: {
-  //   minScale: 80000000
-  // }
+  center: [-98, 39]
 });
  

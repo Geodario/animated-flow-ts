@@ -20,7 +20,7 @@
 import Color from "esri/Color";
 import { Settings } from "../core/settings";
 import { Milliseconds } from "../core/types";
-import { Cells, PixelsPerCell, PixelsPerSecond } from "./types";
+import { Cells, PixelsPerCell } from "./types";
 
 export class FlowSettings extends Settings {
   color = new Color([255, 255, 255, 1]);
@@ -43,9 +43,6 @@ export class FlowSettings extends Settings {
   // How many streamlines per screen.
   linesPerVisualization = 6000;
 
-  // Below this speed, the simulation of a particle is stopped.
-  minSpeedThreshold: PixelsPerSecond = 0.001;
-
   // Protection against division-by-zero during smoothing with gaussian kernel.
   minWeightThreshold = 0.001;
 
@@ -65,4 +62,10 @@ export class FlowSettings extends Settings {
 
   // Controls the animation speed of the streamlines trails.
   timeScale = 30;
+
+  // Whether lines that collide should be "merged"; this should be set to
+  // `true` to avoid the "ridge" effect, caused by particles that clump
+  // together in areas where different currents converge from different
+  // directions.
+  mergeLines = false;
 }

@@ -47,7 +47,7 @@ export class FlowGlobalResources implements Resources {
       attribute float a_Side;
       attribute float a_Time;
       attribute float a_TotalTime;
-      attribute float a_Speed;
+      attribute float a_Opacity;
       attribute float a_Random;
       
       uniform mat4 u_ScreenFromLocal;
@@ -58,7 +58,7 @@ export class FlowGlobalResources implements Resources {
       varying float v_Side;
       varying float v_Time;
       varying float v_TotalTime;
-      varying float v_Speed;
+      varying float v_Opacity;
       varying float v_Random;
       
       void main(void) {
@@ -68,7 +68,7 @@ export class FlowGlobalResources implements Resources {
         v_Side = a_Side;
         v_Time = a_Time;
         v_TotalTime = a_TotalTime;
-        v_Speed = a_Speed;
+        v_Opacity = a_Opacity;
         v_Random = a_Random;
       }`;
 
@@ -81,7 +81,7 @@ export class FlowGlobalResources implements Resources {
       varying float v_Side;
       varying float v_Time;
       varying float v_TotalTime;
-      varying float v_Speed;
+      varying float v_Opacity;
       varying float v_Random;
 
       void main(void) {
@@ -98,11 +98,9 @@ export class FlowGlobalResources implements Resources {
           gl_FragColor.a *= 0.0;
         }
 
-        // gl_FragColor.a = 1.0;
+        gl_FragColor.a *= v_Opacity;
 
         gl_FragColor.rgb *= gl_FragColor.a;
-
-        // gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
       }`;
 
     const vertexShader = gl.createShader(gl.VERTEX_SHADER);
@@ -123,7 +121,7 @@ export class FlowGlobalResources implements Resources {
     gl.bindAttribLocation(program, 2, "a_Side");
     gl.bindAttribLocation(program, 3, "a_Time");
     gl.bindAttribLocation(program, 4, "a_TotalTime");
-    gl.bindAttribLocation(program, 5, "a_Speed");
+    gl.bindAttribLocation(program, 5, "a_Opacity");
     gl.bindAttribLocation(program, 6, "a_Random");
     gl.linkProgram(program);
     gl.deleteShader(vertexShader);
