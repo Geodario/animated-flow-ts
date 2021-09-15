@@ -104,22 +104,67 @@ export class Shared {
   createFlowFieldFromData(flowData: FlowData): Field {
     const data = this.smooth(flowData.data, flowData.columns, flowData.rows);
 
-    const field = (x: Cells, y: Cells): [CellsPerSecond, CellsPerSecond] => {
-      const X: Cells = Math.round(x);
-      let Y: Cells = Math.round(y);
+    if (this.settings.interpolate) {
+      const field = (x: Cells, y: Cells): [CellsPerSecond, CellsPerSecond] => {
+        const X: Cells = Math.floor(x);
+        let Y: Cells = Math.floor(y);
 
-      if (X < 0 || X >= flowData.columns) {
-        return [0, 0];
-      }
+        if (X < 0 || X >= flowData.columns) {
+          return [0, 0];
+        }
 
-      if (Y < 0 || Y >= flowData.rows) {
-        return [0, 0];
-      }
+        if (Y < 0 || Y >= flowData.rows) {
+          return [0, 0];
+        }
 
-      return [data[2 * (Y * flowData.columns + X) + 0]!, data[2 * (Y * flowData.columns + X) + 1]!];
-    };
+        const fx = x - X;
+        const fy = y - Y;
+        
+        const ix0 = X;
+        const iy0 = Y;
+        const ix1 = X < flowData.columns - 1 ? X + 1 : X;
+        const iy1 = Y < flowData.rows - 1 ? Y + 1 : Y;
+        
+        const u00 = data[(iy0 * flowData.columns + ix0) * 2]!;
+        const u10 = data[(iy0 * flowData.columns + ix1) * 2]!;
+        const u01 = data[(iy1 * flowData.columns + ix0) * 2]!;
+        const u11 = data[(iy1 * flowData.columns + ix1) * 2]!;
+        
+        const v00 = data[(iy0 * flowData.columns + ix0) * 2 + 1]!;
+        const v10 = data[(iy0 * flowData.columns + ix1) * 2 + 1]!;
+        const v01 = data[(iy1 * flowData.columns + ix0) * 2 + 1]!;
+        const v11 = data[(iy1 * flowData.columns + ix1) * 2 + 1]!;
 
-    return field;
+        const uAvg1 = u00 * (1 - fy) + u01 * fy;
+        const uAvg2 = u10 * (1 - fy) + u11 * fy;
+        const uAvg3 = uAvg1 * (1 - fx) + uAvg2 * fx;
+
+        const vAvg1 = v00 * (1 - fy) + v01 * fy;
+        const vAvg2 = v10 * (1 - fy) + v11 * fy;
+        const vAvg3 = vAvg1 * (1 - fx) + vAvg2 * fx;
+
+        return [uAvg3, vAvg3];
+      };
+      
+      return field;
+    } else {
+      const field = (x: Cells, y: Cells): [CellsPerSecond, CellsPerSecond] => {
+        const X: Cells = Math.round(x);
+        let Y: Cells = Math.round(y);
+
+        if (X < 0 || X >= flowData.columns) {
+          return [0, 0];
+        }
+
+        if (Y < 0 || Y >= flowData.rows) {
+          return [0, 0];
+        }
+
+        return [data[2 * (Y * flowData.columns + X) + 0]!, data[2 * (Y * flowData.columns + X) + 1]!];
+      };
+      
+      return field;
+    }
   }
 
   /**

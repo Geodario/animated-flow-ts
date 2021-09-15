@@ -68,4 +68,6 @@ export class FlowSettings extends Settings {
   // together in areas where different currents converge from different
   // directions.
   mergeLines = false;
+
+  interpolate = false;
 }

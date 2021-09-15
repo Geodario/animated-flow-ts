@@ -140,6 +140,7 @@ settings.linesPerVisualization = 10000;
 settings.verticesPerLine = 100;
 settings.color = new Color([255, 255, 255, 1]);
 settings.mergeLines = true;
+settings.interpolate = true;
 
 const flowLayer = new FlowLayer({
   url: "https://tiledimageservices.arcgis.com/jIL9msH9OI208GCb/arcgis/rest/services/Spilhaus_UV_ocean_currents/ImageServer",
