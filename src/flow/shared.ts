@@ -143,11 +143,13 @@ export class Shared {
       const ix = Math.round(x);
       const iy = Math.round(y);
       if (ix < 0 || ix > columns - 1 || iy < 0 || iy > rows - 1) {
-        opacity = 0;
+        // opacity = 0;
+        return lineVertices;
       } else {
         const c = collisionField[iy * columns + ix];
         if (c !== -1 && c !== lineId) {
-          opacity = 0;
+          // opacity = 0;
+          return lineVertices;
         } else {
           collisionField[iy * columns + ix] = lineId;
         }
@@ -176,11 +178,13 @@ export class Shared {
         const ix = Math.round(x);
         const iy = Math.round(y);
         if (ix < 0 || ix > columns - 1 || iy < 0 || iy > rows - 1) {
-          opacity = 0;
+          // opacity = 0;
+          return lineVertices;
         } else {
           const c = collisionField[iy * columns + ix];
           if (c !== -1 && c !== lineId) {
-            opacity = 0;
+            // opacity = 0;
+            return lineVertices;
           } else {
             collisionField[iy * columns + ix] = lineId;
           }
@@ -248,6 +252,10 @@ export class Shared {
     let restTime = performance.now();
 
     for (const line of streamLines) {
+      if (line.length === 0) {
+        continue;
+      }
+
       const currentTime = performance.now();
 
       if (currentTime - restTime > this.settings.flowProcessingQuanta) {
