@@ -1,6 +1,7 @@
 import Color from "esri/Color";
 import Extent from "esri/geometry/Extent";
 import SpatialReference from "esri/geometry/SpatialReference";
+import { mat4 } from "gl-matrix";
 import { MapUnits, VisualizationRenderParams } from "../core/types";
 import { defined } from "../core/util";
 import { MainFlowProcessor } from "../flow/processors";
@@ -21,8 +22,12 @@ gl.getExtension("OES_vertex_array_object");
 
 // Settings.
 const settings = new FlowSettings();
-settings.color = new Color([0, 100, 200, 1]);
-settings.linesPerVisualization = 5000;
+settings.color = new Color([0, 180, 255, 1]);
+settings.fixedCellSize = 1;
+settings.smoothing = 1;
+settings.linesPerVisualization = 10000;
+settings.verticesPerLine = 150;
+settings.mergeLines = true;
 
 // Data source.
 function createVortex(vortexCenter: [MapUnits, MapUnits]): Field {
@@ -70,6 +75,17 @@ async function main(): Promise<void> {
   globalResources.attach(gl);
   localResources.attach(gl);
 
+  const projection = mat4.create();
+  mat4.perspective(projection, 1, 16 / 9, 1, 1000);
+
+  const preCurve = mat4.create();
+  mat4.translate(preCurve, preCurve, [-320, -180, 0]);
+  const curvature = 1000;
+  const postCurve = mat4.create();
+  mat4.mul(postCurve, projection, postCurve);
+  mat4.scale(postCurve, postCurve, [100, 100, 0]);
+  // mat4.rotateX(postCurve, postCurve, Math.PI / 2);
+
   function render(): void {
     defined(gl);
     const renderParams: VisualizationRenderParams = {
@@ -78,7 +94,11 @@ async function main(): Promise<void> {
       rotation: 0,
       scale: 1,
       opacity: 1,
-      pixelRatio: 1
+      pixelRatio: 1,
+      
+      preCurve,
+      curvature,
+      postCurve
     };
 
     gl.clearColor(0, 0, 0, 1);

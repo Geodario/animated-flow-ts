@@ -11,6 +11,10 @@
   limitations under the License.
 */
 
+const preCurve = mat4.create();
+const curvature = 100;
+const postCurve = mat4.create();
+
 /**
  * @module animated-flow-ts/core/rendering
  *
@@ -29,6 +33,7 @@ import Extent from "esri/geometry/Extent";
 import { assert, defined } from "./util";
 import { MapUnitsPerPixel, Pixels, Resources, ResourcesEntry, VisualizationRenderParams } from "./types";
 import Point from "esri/geometry/Point";
+import { mat4 } from "gl-matrix";
 
 /**
  * Attach a resource object and reflect the state change in the resource entry.
@@ -140,7 +145,10 @@ export abstract class VisualizationStyle<GR extends Resources, LR extends Resour
       rotation: 0,
       scale: 1,
       opacity: 1,
-      pixelRatio: 1
+      pixelRatio: 1,
+      preCurve,
+      curvature,
+      postCurve
     };
 
     // Load global and local resources.

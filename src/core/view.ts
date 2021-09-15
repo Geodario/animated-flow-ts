@@ -46,10 +46,15 @@
 import { property, subclass } from "esri/core/accessorSupport/decorators";
 import Extent from "esri/geometry/Extent";
 import BaseLayerViewGL2D from "esri/views/2d/layers/BaseLayerViewGL2D";
+import { mat4 } from "gl-matrix";
 import { VisualizationLayer } from "./layer";
 import { attach, detach, VisualizationStyle } from "./rendering";
 import { LocalResourcesEntry, Resources, GlobalResourcesEntry, VisualizationRenderParams, Pixels } from "./types";
 import { defined, degreesToRadians } from "./util";
+
+const preCurve = mat4.create();
+const curvature = 100;
+const postCurve = mat4.create();
 
 /**
  * A 2D layer view designed around the concept of "visualizations".
@@ -287,7 +292,10 @@ export abstract class VisualizationLayerView2D<GR extends Resources, LR extends 
         rotation: degreesToRadians(renderParams.state.rotation),
         scale: mostRecentRenderableLocalResources.resolution / renderParams.state.resolution,
         opacity: 1,
-        pixelRatio: devicePixelRatio
+        pixelRatio: devicePixelRatio,
+        preCurve,
+        curvature,
+        postCurve
       };
 
       defined(this.visualizationStyle);

@@ -54,6 +54,9 @@ export class FlowGlobalResources implements Resources {
       uniform mat4 u_Rotation;
       uniform mat4 u_ClipFromScreen;
       uniform float u_PixelRatio;
+      uniform mat4 u_PreCurve;
+      uniform float u_Curvature;
+      uniform mat4 u_PostCurve;
 
       varying float v_Side;
       varying float v_Time;
@@ -63,8 +66,17 @@ export class FlowGlobalResources implements Resources {
       
       void main(void) {
         vec4 screenPosition = u_ScreenFromLocal * vec4(a_Position, 0.0, 1.0);
+        screenPosition = u_PreCurve * screenPosition;
+        screenPosition.z += u_Curvature;
+        screenPosition.xyz = normalize(screenPosition.xyz) * u_Curvature;
+        screenPosition.z -= u_Curvature;
+        // screenPosition = u_PostCurve * screenPosition;
+        
         screenPosition += u_Rotation * vec4(a_Extrude, 0.0, 0.0) * ${formatGLSLConstant(this.settings.lineWidth / 2)} * u_PixelRatio;
+
         gl_Position = u_ClipFromScreen * screenPosition;
+        // gl_Position = screenPosition;
+
         v_Side = a_Side;
         v_Time = a_Time;
         v_TotalTime = a_TotalTime;
@@ -136,7 +148,10 @@ export class FlowGlobalResources implements Resources {
           u_ClipFromScreen: gl.getUniformLocation(program, "u_ClipFromScreen")!,
           u_PixelRatio: gl.getUniformLocation(program, "u_PixelRatio")!,
           u_Color: gl.getUniformLocation(program, "u_Color")!,
-          u_Time: gl.getUniformLocation(program, "u_Time")!
+          u_Time: gl.getUniformLocation(program, "u_Time")!,
+          u_PreCurve: gl.getUniformLocation(program, "u_PreCurve")!,
+          u_Curvature: gl.getUniformLocation(program, "u_Curvature")!,
+          u_PostCurve: gl.getUniformLocation(program, "u_PostCurve")!
         }
       }
     };
@@ -336,6 +351,10 @@ export class FlowVisualizationStyle extends VisualizationStyle<FlowGlobalResourc
       this.settings.color.a * renderParams.opacity
     );
     gl.uniform1f(globalResources.programs!["texture"]?.uniforms["u_Time"]!, performance.now() / 1000.0);
+
+    gl.uniformMatrix4fv(globalResources.programs!["texture"]?.uniforms["u_PreCurve"]!, false, renderParams.preCurve);
+    gl.uniform1f(globalResources.programs!["texture"]?.uniforms["u_Curvature"]!, renderParams.curvature);
+    gl.uniformMatrix4fv(globalResources.programs!["texture"]?.uniforms["u_PostCurve"]!, false, renderParams.postCurve);
 
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);

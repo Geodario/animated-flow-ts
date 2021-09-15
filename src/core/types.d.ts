@@ -11,6 +11,8 @@
   limitations under the License.
 */
 
+import { mat4 } from "gl-matrix";
+
 /**
  * @module animated-flow-ts/core/types
  *
@@ -99,6 +101,11 @@ export type VisualizationRenderParams = {
    * new visualization, with a matching pixel ratio, to load.
    */
   pixelRatio: number;
+
+  // 3D options
+  preCurve: mat4;
+  curvature: number;
+  postCurve: mat4;
 };
 
 /**
