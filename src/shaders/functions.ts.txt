@@ -1,4 +1,4 @@
-import { Interpolate, Node } from "./model";
+import { Interpolate, Node } from "../graphs/model";
 
 export function assignVaryings(colorModel: Node): Map<Interpolate, string> {
   const collected = new Set<Interpolate>();

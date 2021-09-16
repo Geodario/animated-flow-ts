@@ -1,6 +1,6 @@
 import { defined } from "../core/util";
 import { assignVaryings, generateGLSLVaryingDeclarations } from "./functions";
-import { Collect, GenerateExpressionGLSL, GLSLType } from "./types";
+import { Collect, GenerateExpressionGLSL, GLSLType } from "../graphs/types";
 
 export abstract class Node {
   collect<T extends Node>(shared: Collect<T>): void {
@@ -26,6 +26,7 @@ export abstract class Node {
 export abstract class ExprNode extends Node {
   abstract override get children(): ExprNode[];
   abstract generateExpressionGLSL(shared: GenerateExpressionGLSL): string;
+  abstract evaluateExpression(shared: EvaluateExpression): string;
   abstract get type(): GLSLType;
 }
 
@@ -36,6 +37,28 @@ export class Attribute extends ExprNode {
 
   get id(): string {
     return `Attribute(${this.name})`;
+  }
+
+  get type(): GLSLType {
+    return this._type;
+  }
+
+  get children(): ExprNode[] {
+    return [];
+  }
+
+  generateExpressionGLSL(): string {
+    return this.name;
+  }
+}
+
+export class Property extends ExprNode {
+  constructor(private name: string, private _type: GLSLType) {
+    super();
+  }
+
+  get id(): string {
+    return `Property(${this.name})`;
   }
 
   get type(): GLSLType {
