@@ -32,45 +32,43 @@ export class Shader extends Node {
     let inputsBlock: string;
     let uniformsBlock: string;
     let outputsBlock: string;
+    let bodyBlock: string;
+    let finalBlock: string;
 
     if (options.version === "#version 300 es") {
       inputsBlock = this.definition.inputs.map(({ name, type }) => `in ${type.name} ${name};`).join("\n");
       uniformsBlock = this.definition.uniforms.map(({ name, type }) => `uniform ${type.name} ${name};`).join("\n");
       outputsBlock = this.outputs.map(({ name, expr }) => `out ${expr.type.name} ${name};`).join("\n");
+      bodyBlock = this.outputs.map(({ name, expr }) => `${name} = ${expr.format(glsl)};`).join("\n");
+      if (this.definition.type === "vertex-shader") {
+        finalBlock = `gl_Position = ${options.positionOutputName || "o_Position"}`;
+      } else {
+        finalBlock = ``;
+      }
     } else {
       if (this.definition.type === "vertex-shader") {
         inputsBlock = this.definition.inputs.map(({ name, type }) => `attribute ${type.name} ${name};`).join("\n");
         uniformsBlock = this.definition.uniforms.map(({ name, type }) => `uniform ${type.name} ${name};`).join("\n");
         outputsBlock = this.outputs.map(({ name, expr }) => `varying ${expr.type.name} ${name};`).join("\n");
+        bodyBlock = this.outputs.map(({ name, expr }) => `${name} = ${expr.format(glsl)};`).join("\n");
+        finalBlock = `gl_Position = ${options.positionOutputName || "o_Position"};`;
       } else {
         inputsBlock = this.definition.inputs.map(({ name, type }) => `varying ${type.name} ${name};`).join("\n");
         uniformsBlock = this.definition.uniforms.map(({ name, type }) => `uniform ${type.name} ${name};`).join("\n");
         outputsBlock = "";
+        bodyBlock = this.outputs.map(({ name, expr }) => `${expr.type.name} ${name} = ${expr.format(glsl)};`).join("\n");
+        finalBlock = `gl_FragColor = ${options.colorOutputName || "o_Color"};`;
       }
     }
 
-    const getActualOutputName = (declaredOutputName: string): string => {
-      if (options.version === "#version 300 es") {
-        return declaredOutputName;
-      }
-
-      if (this.definition.type === "vertex-shader" && declaredOutputName === (options.positionOutputName || "o_Position")) {
-        return `gl_Position`;
-      }
-
-      if (this.definition.type === "fragment-shader" && declaredOutputName === (options.colorOutputName || "o_Color")) {
-        return `gl_FragColor`;
-      }
-
-      return declaredOutputName;
-    };
-
     return `${options.version}
+precision highp float;
 ${inputsBlock}
 ${uniformsBlock}
 ${outputsBlock}
 void main(void) {
-${this.outputs.map(({ name, expr }) => `${getActualOutputName(name)} = ${expr.format(glsl)};`).join("\n")}
+${bodyBlock}
+${finalBlock}
 }
 `;
   }

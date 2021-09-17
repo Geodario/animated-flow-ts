@@ -1,9 +1,27 @@
 
 
+import { defined } from "../core/util";
 import { VEC4 } from "../graphs/model";
 import NodeManager from "../graphs/NodeManager";
+import { createProgram, createShader } from "../webgl/util";
 
 const nodes = new NodeManager();
+
+const canvas1 = document.createElement("canvas");
+canvas1.width = 320;
+canvas1.height = 180;
+canvas1.style.border = "1px solid black";
+document.body.appendChild(canvas1);
+const gl1 = canvas1.getContext("webgl");
+defined(gl1);
+
+const canvas2 = document.createElement("canvas");
+canvas2.width = 320;
+canvas2.height = 180;
+canvas2.style.border = "1px solid black";
+document.body.appendChild(canvas2);
+const gl2 = canvas2.getContext("webgl2");
+defined(gl2);
 
 const technique = nodes.technique({
   position: nodes.constant(VEC4, [0, 0, 0, 1]),
@@ -18,6 +36,7 @@ console.log(fs.generateGLSL({ version: "#version 100" }));
 console.log(vs.generateGLSL({ version: "#version 300 es" }));
 console.log(fs.generateGLSL({ version: "#version 300 es" }));
 
+createProgram(gl1, createShader(gl1, gl1.VERTEX_SHADER, vs.generateGLSL({ version: "#version 100" })), createShader(gl1, gl1.FRAGMENT_SHADER, fs.generateGLSL({ version: "#version 100" })));
 
 // import { VEC4 } from "../graphs/model";
 // import NodeManager from "../graphs/NodeManager";
