@@ -1,20 +1,13 @@
 import { defined } from "../core/util";
-import { BinaryOperator, DataType, Expr, FormatExpression, UnaryOperator } from "./model";
+import { BinaryOperator, ValueType, Expr, FormatExpressionVisitor, UnaryOperator } from "./model";
+import { ensureFractional } from "./util";
 
-function ensureFractional(x: number): string {
-  if (Math.floor(x) === x) {
-    return x.toFixed(1);
-  } else {
-    return x.toString();
-  }
-}
-
-export class GenerateGLSL implements FormatExpression {
-  variable(_type: DataType, name: string): string {
+export class GenerateGLSL implements FormatExpressionVisitor {
+  variable(_type: ValueType, name: string): string {
     return name;
   }
   
-  constant(type: DataType, value: number[]): string {
+  constant(type: ValueType, value: number[]): string {
     if (type.scalar) {
       defined(value[0]);
       return ensureFractional(value[0]);
