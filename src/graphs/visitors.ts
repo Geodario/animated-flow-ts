@@ -1,5 +1,5 @@
 import { defined } from "../core/util";
-import { BinaryOperator, ValueType, Expr, FormatExpressionVisitor, UnaryOperator } from "./model";
+import { BinaryOperator, ValueType, Expr, FormatExpressionVisitor, UnaryOperator } from "./core";
 import { GLSLVersion } from "./types";
 import { ensureFractional } from "./util";
 

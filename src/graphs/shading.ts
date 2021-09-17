@@ -1,5 +1,6 @@
 import { defined } from "../core/util";
-import { Expr, Node, ValueType } from "./model";
+import { Annotation, Expr, Node, ValueType } from "./core";
+import NodeManager from "./NodeManager";
 import { GLSLOptions, ShaderType } from "./types";
 import { GLSLFormatter } from "./visitors";
 
@@ -73,8 +74,8 @@ ${finalBlock}
 `;
   }
 
-  splitOutputs(): Shader[] {
-    return this.outputs.map(({ name, expr }) => new Shader({ type: this.definition.type, inputs: this.definition.inputs, uniforms: this.definition.uniforms, outputs: { [name]: expr } }));
+  splitOutputs(nodeManager: NodeManager): Shader[] {
+    return this.outputs.map(({ name, expr }) => nodeManager.shader({ type: this.definition.type, inputs: this.definition.inputs, uniforms: this.definition.uniforms, outputs: { [name]: expr } }));
   }
 }
 
@@ -91,11 +92,98 @@ export class Technique extends Node {
     return [this.definition.position, this.definition.color];
   }
 
-  getVertexShaderDefinition(): { type: ShaderType; inputs: { name: string, type: ValueType }[]; uniforms: { name: string, type: ValueType }[]; outputs: HashMap<Expr>; } {
-    return { type: "vertex-shader", inputs: [], uniforms: [], outputs: { o_Position: this.definition.position } }; // TODO
-  }
+  getShaderDefinitions(nodeManager: NodeManager): {
+    vertexShader: { type: ShaderType; inputs: { name: string, type: ValueType }[]; uniforms: { name: string, type: ValueType }[]; outputs: HashMap<Expr>; },
+    fragmentShader: { type: ShaderType; inputs: { name: string, type: ValueType }[]; uniforms: { name: string, type: ValueType }[]; outputs: HashMap<Expr>; }
+  } {
+    const fragmentNodes = new Set<Fragment>();
+    
+    this.definition.color.collect({
+      collected: fragmentNodes,
+      test: (node): node is Fragment => node instanceof Fragment,
+      visited: new Set<Node>()
+    });
 
-  getFragmentShaderDefinition(): { type: ShaderType; inputs: { name: string, type: ValueType }[]; uniforms: { name: string, type: ValueType }[]; outputs: HashMap<Expr>; } {
-    return { type: "fragment-shader", inputs: [], uniforms: [], outputs: { o_Color: this.definition.color } }; // TODO
+    const fsUniformNodes = new Set<Uniform>();
+    
+    this.definition.color.collect({
+      collected: fsUniformNodes,
+      test: (node): node is Uniform => node instanceof Uniform,
+      visited: new Set<Node>()
+    });
+
+    let color = this.definition.color;
+    
+    const vsOutputMap: HashMap<Expr> = {};
+    const fsInputs: { name: string, type: ValueType }[] = [];
+
+    for (const fragmentNode of fragmentNodes) {
+      const type = fragmentNode.expr.type;
+      const name = `v_Varying${fsInputs.length}`;
+      vsOutputMap[name] = fragmentNode.expr;
+      fsInputs.push({ type, name });
+      color = color.substitute(fragmentNode, nodeManager.variable(type, name), nodeManager);
+    }
+
+    const fsUniforms: { name: string, type: ValueType }[] = [];
+
+    for (const uniformNode of fsUniformNodes) {
+      const type = uniformNode.expr.type;
+      const name = `u_Uniform${fsUniforms.length}`;
+      fsUniforms.push({ type, name });
+      color = color.substitute(uniformNode, nodeManager.variable(type, name), nodeManager);
+    }
+
+    // const attributeNodes = new Set<Attribute>();
+    
+    // this.definition.position.collect({
+    //   collected: attributeNodes,
+    //   test: (node): node is Attribute => node instanceof Attribute,
+    //   visited: new Set<Node>()
+    // });
+
+    // const uniformNodes = new Set<Uniform>();
+    
+    // this.definition.position.collect({
+    //   collected: uniformNodes,
+    //   test: (node): node is Uniform => node instanceof Uniform,
+    //   visited: new Set<Node>()
+    // });
+
+    // let position = this.definition.position;
+    
+    // const inputs: { name: string, type: ValueType }[] = [];
+
+    // for (const attributeNode of attributeNodes) {
+    //   const type = attributeNode.expr.type;
+    //   const name = `a_Attribute${inputs.length}`;
+    //   inputs.push({ type, name });
+    //   position = position.substitute(attributeNode, nodeManager.variable(type, name), nodeManager);
+    // }
+
+    // const uniforms: { name: string, type: ValueType }[] = [];
+
+    // for (const uniformNode of uniformNodes) {
+    //   const type = uniformNode.expr.type;
+    //   const name = `u_Uniform${uniforms.length}`;
+    //   uniforms.push({ type, name });
+    //   position = position.substitute(uniformNode, nodeManager.variable(type, name), nodeManager);
+    // }
+    
+    return {
+      vertexShader: { type: "vertex-shader", inputs: [], uniforms: [], outputs: { /*o_Position: position, */...vsOutputMap } },
+      fragmentShader: { type: "fragment-shader", inputs: fsInputs, uniforms: fsUniforms, outputs: { o_Color: color } }
+    };
   }
+}
+
+
+
+export class Attribute extends Annotation {
+}
+
+export class Fragment extends Annotation {
+}
+
+export class Uniform extends Annotation {
 }

@@ -1,9 +1,11 @@
-import { Binary, BinaryOperator, Constant, Expr, Node, Unary, UnaryOperator, ValueType, Variable } from "./model";
-import { Shader, Technique } from "./shaders";
+import { Binary, BinaryOperator, Constant, Expr, Node, Unary, UnaryOperator, ValueType, Variable } from "./core";
+import { Attribute, Fragment, Shader, Technique, Uniform } from "./shading";
 import { ShaderType } from "./types";
 
 export default class NodeManager {
   private _nodes = new Map<string, Node>();
+
+  // Core
 
   binary(left: Expr, op: BinaryOperator, right: Expr): Binary {
     return this._unique(new Binary(left, op, right));
@@ -27,6 +29,20 @@ export default class NodeManager {
 
   technique(definition: { position: Expr; color: Expr; }): Technique {
     return this._unique(new Technique(definition));
+  }
+
+  // Shading
+
+  attribute(expr: Expr): Attribute {
+    return this._unique(new Attribute(expr));
+  }
+
+  fragment(expr: Expr): Fragment {
+    return this._unique(new Fragment(expr));
+  }
+
+  uniform(expr: Expr): Uniform {
+    return this._unique(new Uniform(expr));
   }
 
   private _unique<T extends Node>(node: T): T {

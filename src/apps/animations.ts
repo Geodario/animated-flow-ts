@@ -1,7 +1,7 @@
 
 
 import { defined } from "../core/util";
-import { VEC4 } from "../graphs/model";
+import { VEC4 } from "../graphs/core";
 import NodeManager from "../graphs/NodeManager";
 import { createProgram, createShader } from "../webgl/util";
 
@@ -24,12 +24,13 @@ const gl2 = canvas2.getContext("webgl2");
 defined(gl2);
 
 const technique = nodes.technique({
-  position: nodes.constant(VEC4, [0, 0, 0, 1]),
-  color: nodes.constant(VEC4, [0, 0, 0, 1]),
+  position: nodes.attribute(nodes.constant(VEC4, [0, 0, 0, 1])),
+  color: nodes.fragment(nodes.constant(VEC4, [0, 0, 0, 1])),
 });
 
-const vs = nodes.shader(technique.getVertexShaderDefinition());
-const fs = nodes.shader(technique.getFragmentShaderDefinition());
+const defs = technique.getShaderDefinitions(nodes);
+const vs = nodes.shader(defs.vertexShader);
+const fs = nodes.shader(defs.fragmentShader);
 
 console.log(vs.generateGLSL({ version: "#version 100" }));
 console.log(fs.generateGLSL({ version: "#version 100" }));

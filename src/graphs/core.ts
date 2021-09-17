@@ -384,3 +384,45 @@ export class Variable extends Expr {
     return nodeManager.variable(this._type, this.name);
   }
 }
+
+export class Annotation extends Expr {
+  constructor(private _expr: Expr) {
+    super();
+  }
+
+  get expr(): Expr {
+    return this._expr;
+  }
+
+  get className(): string {
+    return this.constructor.name;
+  }
+
+  get id(): string {
+    return `${this.className}(${this._expr.id})`;
+  }
+
+  get type(): ValueType {
+    return this._expr.type;
+  }
+
+  get children(): Expr[] {
+    return [this._expr];
+  }
+  
+  format(): string {
+    throw new Error(`${this.className} nodes must be removed from the tree prior to formatting.`);
+  }
+
+  evaluate(): number[] {
+    throw new Error(`${this.className} nodes must be removed from the tree prior to evaluating.`);
+  }
+
+  substitute(search: Expr, replace: Expr, nodeManager: NodeManager): Expr {
+    if (this === search) {
+      return replace;
+    }
+
+    return this._expr.substitute(search, replace, nodeManager);
+  }
+}
