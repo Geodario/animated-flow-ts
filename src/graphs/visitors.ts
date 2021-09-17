@@ -2,7 +2,11 @@ import { defined } from "../core/util";
 import { BinaryOperator, ValueType, Expr, FormatExpressionVisitor, UnaryOperator } from "./model";
 import { ensureFractional } from "./util";
 
-export class GenerateGLSL implements FormatExpressionVisitor {
+export class GLSLFormatter implements FormatExpressionVisitor {
+  constructor(private _version: "#version 100" | "#version 300 es") {
+
+  }
+
   variable(_type: ValueType, name: string): string {
     return name;
   }
