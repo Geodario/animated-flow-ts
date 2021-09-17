@@ -1,26 +1,27 @@
 import { vec3 } from "gl-matrix";
 import { assert, defined } from "../core/util";
+import NodeManager from "./NodeManager";
 
-export interface Collect<T extends Node> {
+export interface CollectContext<T extends Node> {
   visited: Set<Node>;
   test(node: Node): node is T;
   collected: Set<T>;
 }
 
 export abstract class Node {
-  collect<T extends Node>(visitor: Collect<T>): void {
-    if (visitor.visited.has(this)) {
+  collect<T extends Node>(context: CollectContext<T>): void {
+    if (context.visited.has(this)) {
       return;
     }
 
-    visitor.visited.add(this);
+    context.visited.add(this);
 
-    if (visitor.test(this)) {
-      visitor.collected.add(this);
+    if (context.test(this)) {
+      context.collected.add(this);
     }
 
     for (const child of this.children) {
-      child.collect(visitor);
+      child.collect(context);
     }
   }
 
@@ -61,6 +62,7 @@ export abstract class Expr extends Node {
   abstract format(visitor: FormatExpressionVisitor): string;
   abstract evaluate(getVariable: (name: string) => number[]): number[];
   abstract get type(): ValueType;
+  abstract substitute(search: Expr, replace: Expr, nodeManager: NodeManager): Expr;
 }
 
 export class Binary extends Expr {
@@ -221,7 +223,6 @@ export class Binary extends Expr {
             const bi = b[i];
             defined(ai);
             defined(bi);
-            output[i] = ai * bi;
             switch (this.op) {
               case "+": output[i] = ai + bi; break;
               case "-": output[i] = ai - bi; break;
@@ -254,6 +255,14 @@ export class Binary extends Expr {
         return out;
       }
     }
+  }
+
+  substitute(search: Expr, replace: Expr, nodeManager: NodeManager): Expr {
+    if (this === search) {
+      return replace;
+    }
+
+    return nodeManager.binary(this.left.substitute(search, replace, nodeManager), this.op, this.right.substitute(search, replace, nodeManager));
   }
 }
 
@@ -297,6 +306,14 @@ export class Unary extends Expr {
       }
     }
   }
+
+  substitute(search: Expr, replace: Expr, nodeManager: NodeManager): Expr {
+    if (this === search) {
+      return replace;
+    }
+
+    return nodeManager.unary(this.op, this.expr.substitute(search, replace, nodeManager));
+  }
 }
 
 export class Constant extends Expr {
@@ -322,6 +339,14 @@ export class Constant extends Expr {
 
   evaluate(): number[] {
     return this.value;
+  }
+
+  substitute(search: Expr, replace: Expr, nodeManager: NodeManager): Expr {
+    if (this === search) {
+      return replace;
+    }
+
+    return nodeManager.constant(this._type, this.value);
   }
 }
 
@@ -349,5 +374,13 @@ export class Variable extends Expr {
   evaluate(getVariable: (name: string) => number[]): number[] {
     const value = getVariable(this.name);
     return value;
+  }
+
+  substitute(search: Expr, replace: Expr, nodeManager: NodeManager): Expr {
+    if (this === search) {
+      return replace;
+    }
+
+    return nodeManager.variable(this._type, this.name);
   }
 }

@@ -1,6 +1,6 @@
 import { defined } from "../core/util";
 import { Expr, Node, ValueType } from "./model";
-import { ShaderType } from "./types";
+import { GLSLOptions, ShaderType } from "./types";
 import { GLSLFormatter } from "./visitors";
 
 export class Shader extends Node {
@@ -23,10 +23,10 @@ export class Shader extends Node {
       this.children.push(expr);
     }
     this.outputs.sort((a, b) => a.name.localeCompare(b.name));
-    this.id = `Shader(${this.definition.type},inputs=[${this.inputs.map(({ name, type }) => `${name}:${type}`).join(",")}],uniforms=[${this.uniforms.map(({ name, type }) => `${name}:${type}`).join(",")}],outputs={${this.outputs.map(({ name, expr }) => `${name}=${expr}`).join(",")}})`;
+    this.id = `Shader(${this.definition.type},[${this.inputs.map(({ name, type }) => `${name}:${type}`).join(",")}],[${this.uniforms.map(({ name, type }) => `${name}:${type}`).join(",")}],{${this.outputs.map(({ name, expr }) => `${name}=${expr}`).join(",")}})`;
   }
 
-  generateGLSL(options: { version: "#version 100", positionOutputName?: string, colorOutputName?: string } | { version: "#version 300 es" }): string {
+  generateGLSL(options: GLSLOptions): string {
     const glsl = new GLSLFormatter(options.version);
 
     let inputsBlock: string;
@@ -53,8 +53,6 @@ export class Shader extends Node {
       if (options.version === "#version 300 es") {
         return declaredOutputName;
       }
-
-      console.log(declaredOutputName, options.positionOutputName, options.colorOutputName);
 
       if (this.definition.type === "vertex-shader" && declaredOutputName === (options.positionOutputName || "o_Position")) {
         return `gl_Position`;

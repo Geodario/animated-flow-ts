@@ -4,7 +4,7 @@ import { GLSLVersion } from "./types";
 import { ensureFractional } from "./util";
 
 export class GLSLFormatter implements FormatExpressionVisitor {
-  constructor(/*private*/ _version: GLSLVersion) {
+  constructor(_version: GLSLVersion) {
   }
 
   variable(_type: ValueType, name: string): string {
