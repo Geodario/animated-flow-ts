@@ -47,11 +47,14 @@ export class Evaluate implements EvaluateExpression {
   }
 
   binary(left: Expr, op: BinaryOperator, right: Expr): number[] {
-    const left = left.evaluate(this);
-    const right = right.evaluate(this);
+    const x = left.evaluate(this);
+    const y = right.evaluate(this);
 
     switch (op) {
-      case "+": return add(left.type, left, right.type, right);
+      case "+": {
+        const result = new Array<number>(Math.max(x.length, y.length));
+        
+      }
       case "-": return sub(x, y);
       case "*": return mul(x, y);
       case "/": return div(x, y);
@@ -65,7 +68,9 @@ export class Evaluate implements EvaluateExpression {
     const value = expr.evaluate(this);
 
     switch (op) {
-      case "-": return neg(expr.type, value);
+      case "-": {
+        return value.map((x) => -x);
+      }
     }
 
     throw new Error(`Unknown operator "${op}".`);

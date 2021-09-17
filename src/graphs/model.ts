@@ -1,4 +1,4 @@
-import { assert } from "../core/util";
+import { assert, defined } from "../core/util";
 
 export interface Collect<T extends Node> {
   test(node: Node): node is T;
@@ -16,6 +16,8 @@ export const VEC4  = { name: "vec4",  class: "number",  type: "float", dims: [4,
 export const MAT2  = { name: "mat2",  class: "number",  type: "float", dims: [2, 2] as [number, number], vector: true,  scalar: false };
 export const MAT3  = { name: "mat3",  class: "number",  type: "float", dims: [3, 3] as [number, number], vector: true,  scalar: false };
 export const MAT4  = { name: "mat4",  class: "number",  type: "float", dims: [4, 4] as [number, number], vector: true,  scalar: false };
+
+export const matrixTypes = [MAT2, MAT3, MAT4];
 
 export type DataType = typeof FLOAT | typeof VEC2 | typeof VEC3 | typeof VEC4 | typeof MAT2 | typeof MAT3 | typeof MAT4;
 
@@ -72,12 +74,22 @@ export class Binary extends Expr {
 
   get type(): DataType {
     switch (this.op) {
+      case "*":
+        if (this.left.type.scalar || this.right.type.scalar || this.left.type === this.right.type) {
+          return this.left.type.vector ? this.left.type : this.right.type;
+        } else if (this.left.type.dims[0] === this.right.type.dims[0] && this.left.type.dims[1] === this.right.type.dims[1]) {
+          return this.left.type;
+        } else if (this.left.type.dims[1] === this.right.type.dims[0]) {
+          const resultType = matrixTypes.filter((t) => t.dims[0] === this.left.type.dims[0] && t.dims[1] === this.right.type.dims[1])[0];
+          defined(resultType);
+          return resultType;
+        }
+        throw new Error("Type error.");
       case "+":
       case "-":
-      case "*":
       case "/":
       case "%":
-        assert((this.left.type.scalar || this.right.type.scalar) || (this.left.type === this.right.type));
+        assert(this.left.type.scalar || this.right.type.scalar || this.left.type === this.right.type);
         return this.left.type.vector ? this.left.type : this.right.type;
       case "dot":
         assert((this.left.type === VEC2 && this.right.type === VEC2) || (this.left.type === VEC3 && this.right.type === VEC3) || (this.left.type === VEC4 && this.right.type === VEC4));
