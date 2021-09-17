@@ -1,5 +1,5 @@
 import { Constant, VEC4 } from "../graphs/model";
-import { VertexShader } from "../graphs/shaders";
+import { FragmentShader, VertexShader } from "../graphs/shaders";
 
 
 const vs = new VertexShader(
@@ -7,8 +7,13 @@ const vs = new VertexShader(
   {}
 );
 
-console.log(vs.generateGLSL());
+const fs = new FragmentShader({
+  diffuse: new Constant(VEC4, [0, 0, 0, 1]),
+  normal: new Constant(VEC4, [0, 0, 0, 1])
+});
 
+console.log(vs.generateGLSL("#version 100"));
+console.log(fs.generateGLSL("#version 100"));
 
 // import { defined } from "../core/util";
 // import { Binary, Constant, FLOAT, MAT2, Variable } from "../graphs/model";

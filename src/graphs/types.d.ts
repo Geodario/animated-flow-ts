@@ -1,0 +1,1 @@
+export type GLSLVersion = "#version 100" | "#version 300 es";

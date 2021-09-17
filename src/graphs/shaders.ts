@@ -1,5 +1,6 @@
 import { defined } from "../core/util";
 import { Expr, Node } from "./model";
+import { GLSLVersion } from "./types";
 import { GLSLFormatter } from "./visitors";
 
 export class VertexShader extends Node {
@@ -21,16 +22,14 @@ export class VertexShader extends Node {
     this.id = `VertexShader(gl_Position=${this.positionOutput.id},${this.varyings.map(({ name, expr }) => `${name}=${expr}`).join(",")})`;
   }
 
-  generateGLSL(): string {
-    const glsl = new GLSLFormatter();
+  generateGLSL(version: GLSLVersion): string {
+    const glsl = new GLSLFormatter(version);
 
-    return `
-    
-
-    void main(void) {
-      gl_Position = ${this.positionOutput.format(glsl)};
-    }
-    `;
+    return `${version} 
+void main(void) {
+gl_Position = ${this.positionOutput.format(glsl)};
+}
+`;
   }
 }
 
@@ -54,18 +53,16 @@ export class FragmentShader extends Node {
   }
 
   splitOutputs(): FragmentShader[] {
-    return this.colorOutputs.map((colorOutput) => new FragmentShader([colorOutput]))
+    return this.colors.map(({ name, expr }) => new FragmentShader({ [name]: expr }));
   }
 
-  generateGLSL(version: "#version 100" | "#version 300 es"): string {
-    const glsl = new GLSLFormatter();
+  generateGLSL(version: GLSLVersion): string {
+    const glsl = new GLSLFormatter(version);
 
-    return `
-    
-
-    void main(void) {
-      gl_Position = ${this.positionOutput.format(glsl)};
-    }
-    `;
+    return `${version}
+void main(void) {
+${this.colors.map(({ name, expr }) => `${name} = ${expr.format(glsl)};`).join("\n")}
+}
+`;
   }
 }

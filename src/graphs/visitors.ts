@@ -1,10 +1,10 @@
 import { defined } from "../core/util";
 import { BinaryOperator, ValueType, Expr, FormatExpressionVisitor, UnaryOperator } from "./model";
+import { GLSLVersion } from "./types";
 import { ensureFractional } from "./util";
 
 export class GLSLFormatter implements FormatExpressionVisitor {
-  constructor(private _version: "#version 100" | "#version 300 es") {
-
+  constructor(/*private*/ _version: GLSLVersion) {
   }
 
   variable(_type: ValueType, name: string): string {
