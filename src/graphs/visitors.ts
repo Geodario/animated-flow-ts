@@ -1,5 +1,5 @@
 import { defined } from "../core/util";
-import { BinaryOperator, DataType, EvaluateExpression, Expr, FormatExpression, UnaryOperator } from "./model";
+import { BinaryOperator, DataType, Expr, FormatExpression, UnaryOperator } from "./model";
 
 function ensureFractional(x: number): string {
   if (Math.floor(x) === x) {
@@ -24,55 +24,26 @@ export class GenerateGLSL implements FormatExpression {
   }
 
   binary(left: Expr, op: BinaryOperator, right: Expr): string {
-    return `(${left.format(this)} ${op} ${right.format(this)})`;
+    switch (op) {
+      case "+": 
+      case "-":
+      case "*": 
+      case "/":
+        return `(${left.format(this)} ${op} ${right.format(this)})`;
+      case "%":
+      case "dot":
+      case "cross":
+        return `${op}(${left.format(this)}, ${right.format(this)})`;
+    }
   }
 
   unary(op: UnaryOperator, expr: Expr): string {
-    return `(${op} ${expr.format(this)})`;
-  }
-}
-
-export class Evaluate implements EvaluateExpression {
-  constructor(private variableValues: Map<string, number[]>) {
-  }
-
-  variable(_type: DataType, name: string): number[] {
-    const value = this.variableValues.get(name);
-    defined(value);
-    return value;
-  }
-
-  constant(_type: DataType, value: number[]): number[] {
-    return value;
-  }
-
-  binary(left: Expr, op: BinaryOperator, right: Expr): number[] {
-    const x = left.evaluate(this);
-    const y = right.evaluate(this);
-
     switch (op) {
-      case "+": {
-        const result = new Array<number>(Math.max(x.length, y.length));
-        
-      }
-      case "-": return sub(x, y);
-      case "*": return mul(x, y);
-      case "/": return div(x, y);
-      case "%": return mod(x, y);
+      case "-":
+        return `(${op}${expr.format(this)})`;
+      case "abs":
+      case "length":
+        return `${op}(${expr.format(this)})`;
     }
-
-    throw new Error(`Unknown operator "${op}".`);
-  }
-
-  unary(op: string, expr: Expr): number[] {
-    const value = expr.evaluate(this);
-
-    switch (op) {
-      case "-": {
-        return value.map((x) => -x);
-      }
-    }
-
-    throw new Error(`Unknown operator "${op}".`);
   }
 }

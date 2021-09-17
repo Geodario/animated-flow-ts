@@ -1,3 +1,4 @@
+import { vec3 } from "gl-matrix";
 import { assert, defined } from "../core/util";
 
 export interface Collect<T extends Node> {
@@ -9,15 +10,21 @@ export interface Collect<T extends Node> {
 export type UnaryOperator = "-" | "abs" | "length";
 export type BinaryOperator = "+" | "-" | "*" | "/" | "%" | "dot" | "cross";
 
-export const FLOAT = { name: "float", class: "number",  type: "float", dims: [1, 1] as [number, number], vector: false, scalar: true };
-export const VEC2  = { name: "vec2",  class: "number",  type: "float", dims: [2, 1] as [number, number], vector: true,  scalar: false };
-export const VEC3  = { name: "vec3",  class: "number",  type: "float", dims: [3, 1] as [number, number], vector: true,  scalar: false };
-export const VEC4  = { name: "vec4",  class: "number",  type: "float", dims: [4, 1] as [number, number], vector: true,  scalar: false };
-export const MAT2  = { name: "mat2",  class: "number",  type: "float", dims: [2, 2] as [number, number], vector: true,  scalar: false };
-export const MAT3  = { name: "mat3",  class: "number",  type: "float", dims: [3, 3] as [number, number], vector: true,  scalar: false };
-export const MAT4  = { name: "mat4",  class: "number",  type: "float", dims: [4, 4] as [number, number], vector: true,  scalar: false };
+export const FLOAT = { name: "float", dims: [1, 1] as [number, number], length: 1,  vector: false,  scalar: true,  matrix: false };
+export const VEC2  = { name: "vec2",  dims: [2, 1] as [number, number], length: 2,  vector: true,   scalar: false, matrix: false };
+export const VEC3  = { name: "vec3",  dims: [3, 1] as [number, number], length: 3,  vector: true,   scalar: false, matrix: false };
+export const VEC4  = { name: "vec4",  dims: [4, 1] as [number, number], length: 4,  vector: true,   scalar: false, matrix: false };
+export const MAT2  = { name: "mat2",  dims: [2, 2] as [number, number], length: 4,  vector: false,  scalar: false, matrix: true };
+export const MAT3  = { name: "mat3",  dims: [3, 3] as [number, number], length: 9,  vector: false,  scalar: false, matrix: true };
+export const MAT4  = { name: "mat4",  dims: [4, 4] as [number, number], length: 16, vector: false,  scalar: false, matrix: true };
 
-export const matrixTypes = [MAT2, MAT3, MAT4];
+const AllTypes = [FLOAT, VEC2, VEC3, VEC4, MAT2, MAT3, MAT4];
+
+export function getTypeByDims(rows: number, columns: number): DataType {
+  const t = AllTypes.filter((t) => t.dims[0] === rows && t.dims[1] === columns)[0];
+  defined(t);
+  return t;
+}
 
 export type DataType = typeof FLOAT | typeof VEC2 | typeof VEC3 | typeof VEC4 | typeof MAT2 | typeof MAT3 | typeof MAT4;
 
@@ -26,13 +33,6 @@ export interface FormatExpression {
   constant(type: DataType, value: number[]): string;
   unary(op: UnaryOperator, expr: Expr): string;
   binary(left: Expr, op: BinaryOperator, right: Expr): string;
-}
-
-export interface EvaluateExpression {
-  variable(type: DataType, name: string): number[];
-  constant(type: DataType, value: number[]): number[];
-  unary(op: UnaryOperator, expr: Expr): number[];
-  binary(left: Expr, op: BinaryOperator, right: Expr): number[];
 }
 
 export abstract class Node {
@@ -59,7 +59,7 @@ export abstract class Node {
 export abstract class Expr extends Node {
   abstract override get children(): Expr[];
   abstract format(visitor: FormatExpression): string;
-  abstract evaluate(visitor: EvaluateExpression): number[];
+  abstract evaluate(variableValues: Map<string, number[]>): number[];
   abstract get type(): DataType;
 }
 
@@ -75,22 +75,27 @@ export class Binary extends Expr {
   get type(): DataType {
     switch (this.op) {
       case "*":
-        if (this.left.type.scalar || this.right.type.scalar || this.left.type === this.right.type) {
-          return this.left.type.vector ? this.left.type : this.right.type;
-        } else if (this.left.type.dims[0] === this.right.type.dims[0] && this.left.type.dims[1] === this.right.type.dims[1]) {
+        if (this.left.type.scalar) {
+          return this.right.type;
+        } else if (this.right.type.scalar) {
           return this.left.type;
-        } else if (this.left.type.dims[1] === this.right.type.dims[0]) {
-          const resultType = matrixTypes.filter((t) => t.dims[0] === this.left.type.dims[0] && t.dims[1] === this.right.type.dims[1])[0];
-          defined(resultType);
-          return resultType;
+        } else if (this.left.type.vector && this.right.type.vector) {
+          return this.left.type;
+        } else {
+          return getTypeByDims(this.left.type.dims[0], this.right.type.dims[1]);
         }
-        throw new Error("Type error.");
       case "+":
       case "-":
       case "/":
       case "%":
-        assert(this.left.type.scalar || this.right.type.scalar || this.left.type === this.right.type);
-        return this.left.type.vector ? this.left.type : this.right.type;
+        if (this.left.type.scalar) {
+          return this.right.type;
+        } else if (this.right.type.scalar) {
+          return this.left.type;
+        } else if (this.left.type === this.right.type) {
+          return this.left.type;
+        }
+        throw new Error("Type error.");
       case "dot":
         assert((this.left.type === VEC2 && this.right.type === VEC2) || (this.left.type === VEC3 && this.right.type === VEC3) || (this.left.type === VEC4 && this.right.type === VEC4));
         return this.left.type;
@@ -108,8 +113,110 @@ export class Binary extends Expr {
     return visitor.binary(this.left, this.op, this.right);
   }
 
-  evaluate(visitor: EvaluateExpression): number[] {
-    return visitor.binary(this.left, this.op, this.right);
+  evaluate(variableValues: Map<string, number[]>): number[] {
+    switch (this.op) {
+      case "*": {
+        const a = this.left.evaluate(variableValues);
+        const b = this.right.evaluate(variableValues);
+
+        if (this.left.type.scalar) {
+          const s = a[0];
+          defined(s);
+          const length = this.type.length;
+          const output = new Array<number>(length);
+          for (let i = 0; i < length; i++) {
+            const bi = b[i];
+            defined(bi);
+            output[i] = s * bi;
+          }
+          return output;
+        } else if (this.right.type.scalar) {
+          const s = b[0];
+          defined(s);
+          const length = this.type.length;
+          const output = new Array<number>(length);
+          for (let i = 0; i < length; i++) {
+            const ai = a[i];
+            defined(ai);
+            output[i] = ai * s;
+          }
+          return output;
+        } else if (this.left.type.vector && this.right.type.vector) {
+          const length = this.type.length;
+          const output = new Array<number>(length);
+          for (let i = 0; i < length; i++) {
+            const ai = a[i];
+            const bi = b[i];
+            defined(ai);
+            defined(bi);
+            output[i] = ai * bi;
+          }
+          return output;
+        } else {
+          const length = this.type.length;
+          const output = new Array<number>(length);
+          const outRows = this.left.type.dims[0];
+          const sumLength = this.left.type.dims[1];
+          const outCols = this.right.type.dims[1];
+          for (let i = 0; i < outRows; i++) {
+            for (let j = 0; j < outCols; j++) {
+              let s = 0;
+              for (let k = 0; k < sumLength; k++) {
+                const aik = a[i * outRows + k];
+                const bkj = b[k * outRows + j];
+                defined(aik);
+                defined(bkj);
+                s += aik * bkj;
+              }
+              output[j * outRows + i] = s;
+            }
+          }
+          return output;
+        }
+      }
+      case "+":
+      case "-":
+      case "/":
+      case "%": {
+        const a = this.left.evaluate(variableValues);
+        const b = this.right.evaluate(variableValues);
+        const length = this.type.length;
+        const output = new Array<number>(length);
+        for (let i = 0; i < length; i++) {
+          const ai = a[i];
+          const bi = b[i];
+          defined(ai);
+          defined(bi);
+          switch (this.op) {
+            case "+": output[i] = ai + bi; break;
+            case "-": output[i] = ai - bi; break;
+            case "/": output[i] = ai / bi; break;
+            case "%": output[i] = ai % bi; break;
+          }
+        }
+        throw new Error("Type error.");
+      }
+      case "dot":
+        const a = this.left.evaluate(variableValues);
+        const b = this.right.evaluate(variableValues);
+        const length = this.type.length;
+        let d = 0;
+        for (let i = 0; i < length; i++) {
+          const ai = a[i];
+          const bi = b[i];
+          defined(ai);
+          defined(bi);
+          d += ai * bi;
+        }
+        return [d];
+      case "cross": {
+        const out: [number, number, number] = [0, 0, 0];
+        const a = this.left.evaluate(variableValues) as [number, number, number];
+        const b = this.right.evaluate(variableValues) as [number, number, number];
+        vec3.cross(out, a, b);
+        return out;
+      }
+    }
   }
 }
 
@@ -138,8 +245,20 @@ export class Unary extends Expr {
     return visitor.unary(this.op, this.expr);
   }
 
-  evaluate(visitor: EvaluateExpression): number[] {
-    return visitor.unary(this.op, this.expr);
+  evaluate(variableValues: Map<string, number[]>): number[] {
+    const value = this.expr.evaluate(variableValues);
+
+    switch (this.op) {
+      case "-": {
+        return value.map((x) => -x);
+      }
+      case "abs": {
+        return value.map((x) => Math.abs(x));
+      }
+      case "length": {
+        return [Math.sqrt(value.reduce((p, c) => p + c * c, 0))];
+      }
+    }
   }
 }
 
@@ -164,8 +283,8 @@ export class Constant extends Expr {
     return visitor.constant(this._type, this.value);
   }
 
-  evaluate(visitor: EvaluateExpression): number[] {
-    return visitor.constant(this._type, this.value);
+  evaluate(): number[] {
+    return this.value;
   }
 }
 
@@ -190,7 +309,9 @@ export class Variable extends Expr {
     return visitor.variable(this._type, this.name);
   }
 
-  evaluate(visitor: EvaluateExpression): number[] {
-    return visitor.variable(this._type, this.name);
+  evaluate(variableValues: Map<string, number[]>): number[] {
+    const value = variableValues.get(this.name);
+    defined(value);
+    return value;
   }
 }
