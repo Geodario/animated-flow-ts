@@ -1,30 +1,59 @@
-import { Constant, VEC4 } from "../graphs/model";
-import { Shader } from "../graphs/shaders";
 
 
-const vs = new Shader({
-  type: "vertex-shader",
-  inputs: [],
-  uniforms: [],
-  outputs: {
-    o_Position: new Constant(VEC4, [0, 0, 0, 1])
-  }
+import { VEC4 } from "../graphs/model";
+import NodeManager from "../graphs/NodeManager";
+
+const nodes = new NodeManager();
+
+const technique = nodes.technique({
+  position: nodes.constant(VEC4, [0, 0, 0, 1]),
+  color: nodes.constant(VEC4, [0, 0, 0, 1]),
 });
 
-const fs = new Shader({
-  type: "fragment-shader",
-  inputs: [],
-  uniforms: [],
-  outputs: {
-    o_Diffuse: new Constant(VEC4, [0, 0, 0, 1]),
-    o_Normal: new Constant(VEC4, [0, 0, 0, 1])
-  }
-});
+const vs = nodes.shader(technique.getVertexShaderDefinition());
+const fs = nodes.shader(technique.getFragmentShaderDefinition());
 
-console.log(vs.generateGLSL({ version: "#version 100", positionOutputName: "o_Position", colorOutputName: "o_Diffuse" }));
-console.log(fs.generateGLSL({ version: "#version 100", positionOutputName: "o_Position", colorOutputName: "o_Diffuse" }));
+console.log(vs.generateGLSL({ version: "#version 100" }));
+console.log(fs.generateGLSL({ version: "#version 100" }));
 console.log(vs.generateGLSL({ version: "#version 300 es" }));
 console.log(fs.generateGLSL({ version: "#version 300 es" }));
+
+
+// import { VEC4 } from "../graphs/model";
+// import NodeManager from "../graphs/NodeManager";
+// import { Shader } from "../graphs/shaders";
+
+// const nodes = new NodeManager();
+
+// const vs = new Shader({
+//   type: "vertex-shader",
+//   inputs: [],
+//   uniforms: [],
+//   outputs: {
+//     o_Position: nodes.constant(VEC4, [0, 0, 0, 1])
+//   }
+// });
+
+// const fs = new Shader({
+//   type: "fragment-shader",
+//   inputs: [],
+//   uniforms: [],
+//   outputs: {
+//     o_Diffuse: nodes.constant(VEC4, [0, 0, 0, 1]),
+//     o_Normal: nodes.constant(VEC4, [0, 0, 0, 1])
+//   }
+// });
+
+// console.log(vs.generateGLSL({ version: "#version 100", positionOutputName: "o_Position", colorOutputName: "o_Diffuse" }));
+// console.log(fs.generateGLSL({ version: "#version 100", positionOutputName: "o_Position", colorOutputName: "o_Diffuse" }));
+// console.log(vs.generateGLSL({ version: "#version 300 es" }));
+// console.log(fs.generateGLSL({ version: "#version 300 es" }));
+
+
+
+
+
+
 
 // import { defined } from "../core/util";
 // import { Binary, Constant, FLOAT, MAT2, Variable } from "../graphs/model";
