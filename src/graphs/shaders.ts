@@ -1,68 +1,81 @@
 import { defined } from "../core/util";
-import { Expr, Node } from "./model";
-import { GLSLVersion } from "./types";
+import { Expr, Node, ValueType } from "./model";
+import { ShaderType } from "./types";
 import { GLSLFormatter } from "./visitors";
 
-export class VertexShader extends Node {
+export class Shader extends Node {
   id: string;
   children: Node[];
-  private varyings: { name: string; expr: Expr; }[];
+  private inputs: { name: string, type: ValueType }[];
+  private uniforms: { name: string, type: ValueType }[];
+  private outputs: { name: string; expr: Expr; }[];
 
-  constructor(private positionOutput: Expr, private varyingOutputs: HashMap<Expr>) {
+  constructor(private definition: { type: ShaderType, inputs: { name: string, type: ValueType }[], uniforms: { name: string, type: ValueType }[], outputs: HashMap<Expr> }) {
     super();
     this.children = [];
-    this.varyings = [];
-    for (const name in this.varyingOutputs) {
-      const expr = this.varyingOutputs[name];
+    this.inputs = definition.inputs;
+    this.uniforms = definition.uniforms;
+    this.outputs = [];
+    for (const name in this.definition.outputs) {
+      const expr = this.definition.outputs[name];
       defined(expr);
-      this.varyings.push({ name, expr });
+      this.outputs.push({ name, expr });
       this.children.push(expr);
     }
-    this.varyings.sort((a, b) => a.name.localeCompare(b.name));
-    this.id = `VertexShader(gl_Position=${this.positionOutput.id},${this.varyings.map(({ name, expr }) => `${name}=${expr}`).join(",")})`;
+    this.outputs.sort((a, b) => a.name.localeCompare(b.name));
+    this.id = `Shader(${this.definition.type},inputs=[${this.inputs.map(({ name, type }) => `${name}:${type}`).join(",")}],uniforms=[${this.uniforms.map(({ name, type }) => `${name}:${type}`).join(",")}],outputs={${this.outputs.map(({ name, expr }) => `${name}=${expr}`).join(",")}})`;
   }
 
-  generateGLSL(version: GLSLVersion): string {
-    const glsl = new GLSLFormatter(version);
+  generateGLSL(options: { version: "#version 100", positionOutputName: string, colorOutputName: string } | { version: "#version 300 es" }): string {
+    const glsl = new GLSLFormatter(options.version);
 
-    return `${version} 
+    let inputsBlock: string;
+    let uniformsBlock: string;
+    let outputsBlock: string;
+
+    if (options.version === "#version 300 es") {
+      inputsBlock = this.definition.inputs.map(({ name, type }) => `in ${type.name} ${name};`).join("\n");
+      uniformsBlock = this.definition.uniforms.map(({ name, type }) => `uniform ${type.name} ${name};`).join("\n");
+      outputsBlock = this.outputs.map(({ name, expr }) => `out ${expr.type.name} ${name};`).join("\n");
+    } else {
+      if (this.definition.type === "vertex-shader") {
+        inputsBlock = this.definition.inputs.map(({ name, type }) => `attribute ${type.name} ${name};`).join("\n");
+        uniformsBlock = this.definition.uniforms.map(({ name, type }) => `uniform ${type.name} ${name};`).join("\n");
+        outputsBlock = this.outputs.map(({ name, expr }) => `varying ${expr.type.name} ${name};`).join("\n");
+      } else {
+        inputsBlock = this.definition.inputs.map(({ name, type }) => `varying ${type.name} ${name};`).join("\n");
+        uniformsBlock = this.definition.uniforms.map(({ name, type }) => `uniform ${type.name} ${name};`).join("\n");
+        outputsBlock = "";
+      }
+    }
+
+    function getActualOutputName(declaredOutputName: string): string {
+      if (options.version === "#version 300 es") {
+        return declaredOutputName;
+      }
+
+      if (declaredOutputName === options.positionOutputName) {
+        return `gl_Position`;
+      }
+
+      if (declaredOutputName === options.colorOutputName) {
+        return `gl_FragColor`;
+      }
+
+      return declaredOutputName;
+    }
+
+    return `${options.version}
+${inputsBlock}
+${uniformsBlock}
+${outputsBlock}
 void main(void) {
-gl_Position = ${this.positionOutput.format(glsl)};
+${this.outputs.map(({ name, expr }) => `${getActualOutputName(name)} = ${expr.format(glsl)};`).join("\n")}
 }
 `;
   }
-}
 
-export class FragmentShader extends Node {
-  id: string;
-  children: Node[];
-  private colors: { name: string; expr: Expr; }[];
-
-  constructor(private colorOutputs: HashMap<Expr>) {
-    super();
-    this.children = [];
-    this.colors = [];
-    for (const name in this.colorOutputs) {
-      const expr = this.colorOutputs[name];
-      defined(expr);
-      this.colors.push({ name, expr });
-      this.children.push(expr);
-    }
-    this.colors.sort((a, b) => a.name.localeCompare(b.name));
-    this.id = `FragmentShader(${this.colors.map(({ name, expr }) => `${name}=${expr}`).join(",")})`;
-  }
-
-  splitOutputs(): FragmentShader[] {
-    return this.colors.map(({ name, expr }) => new FragmentShader({ [name]: expr }));
-  }
-
-  generateGLSL(version: GLSLVersion): string {
-    const glsl = new GLSLFormatter(version);
-
-    return `${version}
-void main(void) {
-${this.colors.map(({ name, expr }) => `${name} = ${expr.format(glsl)};`).join("\n")}
-}
-`;
+  splitOutputs(): Shader[] {
+    return this.outputs.map(({ name, expr }) => new Shader({ type: this.definition.type, inputs: this.definition.inputs, uniforms: this.definition.uniforms, outputs: { [name]: expr } }));
   }
 }

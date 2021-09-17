@@ -1,19 +1,30 @@
 import { Constant, VEC4 } from "../graphs/model";
-import { FragmentShader, VertexShader } from "../graphs/shaders";
+import { Shader } from "../graphs/shaders";
 
 
-const vs = new VertexShader(
-  new Constant(VEC4, [0, 0, 0, 1]),
-  {}
-);
-
-const fs = new FragmentShader({
-  diffuse: new Constant(VEC4, [0, 0, 0, 1]),
-  normal: new Constant(VEC4, [0, 0, 0, 1])
+const vs = new Shader({
+  type: "vertex-shader",
+  inputs: [],
+  uniforms: [],
+  outputs: {
+    o_Position: new Constant(VEC4, [0, 0, 0, 1])
+  }
 });
 
-console.log(vs.generateGLSL("#version 100"));
-console.log(fs.generateGLSL("#version 100"));
+const fs = new Shader({
+  type: "fragment-shader",
+  inputs: [],
+  uniforms: [],
+  outputs: {
+    o_Diffuse: new Constant(VEC4, [0, 0, 0, 1]),
+    o_Normal: new Constant(VEC4, [0, 0, 0, 1])
+  }
+});
+
+console.log(vs.generateGLSL({ version: "#version 100", positionOutputName: "o_Position", colorOutputName: "o_Diffuse" }));
+console.log(fs.generateGLSL({ version: "#version 100", positionOutputName: "o_Position", colorOutputName: "o_Diffuse" }));
+console.log(vs.generateGLSL({ version: "#version 300 es" }));
+console.log(fs.generateGLSL({ version: "#version 300 es" }));
 
 // import { defined } from "../core/util";
 // import { Binary, Constant, FLOAT, MAT2, Variable } from "../graphs/model";
