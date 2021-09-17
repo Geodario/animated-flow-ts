@@ -1,18 +1,52 @@
-import { Expr } from "./model";
-import { DataType, EvaluateExpression, FormatExpression } from "./types";
+import { defined } from "../core/util";
+import { BinaryOperator, DataType, EvaluateExpression, Expr, FormatExpression, UnaryOperator } from "./model";
+
+function ensureFractional(x: number): string {
+  if (Math.floor(x) === x) {
+    return x.toFixed(1);
+  } else {
+    return x.toString();
+  }
+}
 
 export class GenerateGLSL implements FormatExpression {
-  binary(left: Expr, op: string, right: Expr): string {
+  variable(_type: DataType, name: string): string {
+    return name;
+  }
+  
+  constant(type: DataType, value: number[]): string {
+    if (type.scalar) {
+      defined(value[0]);
+      return ensureFractional(value[0]);
+    } else {
+      return `${type.name}(${value.map(ensureFractional).join(", ")})`; 
+    }
+  }
+
+  binary(left: Expr, op: BinaryOperator, right: Expr): string {
     return `(${left.format(this)} ${op} ${right.format(this)})`;
   }
 
-  unary(op: string, expr: Expr): string {
+  unary(op: UnaryOperator, expr: Expr): string {
     return `(${op} ${expr.format(this)})`;
   }
 }
 
 export class Evaluate implements EvaluateExpression {
-  binary(left: Expr, op: string, right: Expr): number[] {
+  constructor(private variableValues: Map<string, number[]>) {
+  }
+
+  variable(_type: DataType, name: string): number[] {
+    const value = this.variableValues.get(name);
+    defined(value);
+    return value;
+  }
+
+  constant(_type: DataType, value: number[]): number[] {
+    return value;
+  }
+
+  binary(left: Expr, op: BinaryOperator, right: Expr): number[] {
     const left = left.evaluate(this);
     const right = right.evaluate(this);
 

@@ -1,21 +1,21 @@
 import { assert } from "../core/util";
 
-export interface Collect<T extends Expr> {
-  test(node: Expr): node is T;
-  visited: Set<Expr>;
+export interface Collect<T extends Node> {
+  test(node: Node): node is T;
+  visited: Set<Node>;
   collected: Set<T>;
 }
 
 export type UnaryOperator = "-" | "abs" | "length";
 export type BinaryOperator = "+" | "-" | "*" | "/" | "%" | "dot" | "cross";
 
-export const FLOAT = { name: "float", class: "number", type: "float", dims: [1, 1] as [number, number], vector: false, scalar: true };
-export const VEC2 = { name: "vec2", class: "number", type: "float", dims: [2, 1] as [number, number], vector: true, scalar: false };
-export const VEC3 = { name: "vec3", class: "number", type: "float", dims: [3, 1] as [number, number], vector: true, scalar: false };
-export const VEC4 = { name: "vec4", class: "number", type: "float", dims: [4, 1] as [number, number], vector: true, scalar: false };
-export const MAT2 = { name: "mat2", class: "number", type: "float", dims: [2, 2] as [number, number], vector: true, scalar: false };
-export const MAT3 = { name: "mat3", class: "number", type: "float", dims: [3, 3] as [number, number], vector: true, scalar: false };
-export const MAT4 = { name: "mat4", class: "number", type: "float", dims: [4, 4] as [number, number], vector: true, scalar: false };
+export const FLOAT = { name: "float", class: "number",  type: "float", dims: [1, 1] as [number, number], vector: false, scalar: true };
+export const VEC2  = { name: "vec2",  class: "number",  type: "float", dims: [2, 1] as [number, number], vector: true,  scalar: false };
+export const VEC3  = { name: "vec3",  class: "number",  type: "float", dims: [3, 1] as [number, number], vector: true,  scalar: false };
+export const VEC4  = { name: "vec4",  class: "number",  type: "float", dims: [4, 1] as [number, number], vector: true,  scalar: false };
+export const MAT2  = { name: "mat2",  class: "number",  type: "float", dims: [2, 2] as [number, number], vector: true,  scalar: false };
+export const MAT3  = { name: "mat3",  class: "number",  type: "float", dims: [3, 3] as [number, number], vector: true,  scalar: false };
+export const MAT4  = { name: "mat4",  class: "number",  type: "float", dims: [4, 4] as [number, number], vector: true,  scalar: false };
 
 export type DataType = typeof FLOAT | typeof VEC2 | typeof VEC3 | typeof VEC4 | typeof MAT2 | typeof MAT3 | typeof MAT4;
 
@@ -61,7 +61,7 @@ export abstract class Expr extends Node {
   abstract get type(): DataType;
 }
 
-export abstract class Binary extends Expr {
+export class Binary extends Expr {
   constructor(private left: Expr, private op: BinaryOperator, private right: Expr) {
     super();
   }
@@ -101,7 +101,7 @@ export abstract class Binary extends Expr {
   }
 }
 
-export abstract class Unary extends Expr {
+export class Unary extends Expr {
   constructor(private op: UnaryOperator, private expr: Expr) {
     super();
   }
@@ -131,7 +131,7 @@ export abstract class Unary extends Expr {
   }
 }
 
-export abstract class Constant extends Expr {
+export class Constant extends Expr {
   constructor(private _type: DataType, private value: number[]) {
     super();
   }
@@ -157,7 +157,7 @@ export abstract class Constant extends Expr {
   }
 }
 
-export abstract class Variable extends Expr {
+export class Variable extends Expr {
   constructor(private _type: DataType, private name: string) {
     super();
   }
