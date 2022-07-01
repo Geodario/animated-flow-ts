@@ -99,14 +99,7 @@ const u_Project = mat4.create();
 // from a feature layer and render them as color-coded
 // shimmering points.
 const style = new ShimmerVisualizationStyle(
-  "https://services.arcgis.com/AgwDJMQH12AGieWa/arcgis/rest/services/global_power_plant_database_June_2018/FeatureServer",
-  "fuel1",
-  {
-    Wind: [1, 0, 0, 1],
-    Solar: [0, 1, 0, 1],
-    Hydro: [0, 0, 1, 1]
-  },
-  [1, 1, 1, 1]
+  "https://services.arcgis.com/AgwDJMQH12AGieWa/arcgis/rest/services/global_power_plant_database_June_2018/FeatureServer"
 );
 
 // We create an asynchronous `main()` function because we want to use `await`.

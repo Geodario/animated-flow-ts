@@ -12,7 +12,7 @@ export class ShimmerLayerView2D extends VisualizationLayerView2D<GlobalResources
     const layer = this.layer as ShimmerLayer;
 
     // The feature URL and the field name are passed to the style as they are.
-    const { featureUrl, fieldName } = layer;
+    const { featureUrl } = layer;
 
     // The colors in the color map and the default color are converted from `esri/Color`
     // instances to normalized RGBA vectors with components in the range [0, 1].
@@ -32,6 +32,6 @@ export class ShimmerLayerView2D extends VisualizationLayerView2D<GlobalResources
     defaultColor[1] /= 255;
     defaultColor[2] /= 255;
 
-    return new ShimmerVisualizationStyle(featureUrl, fieldName, colorMap, defaultColor);
+    return new ShimmerVisualizationStyle(featureUrl);
   }
 }
